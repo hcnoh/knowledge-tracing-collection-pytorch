@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# custom directories
+.ckpts
+.datasets
+.vscode
+
+# custom files
+results.ipynb

@@ -22,15 +22,15 @@ class AssistmentsLoader(object):
         self.num_user = np.unique(self._database["user_id"].values).shape[0]
         self.num_q = np.unique(self._database["skill_name"].unique()).shape[0]
 
-        try:
+        if os.path.isfile(os.path.join(self._dataset_dir, "dataset.pickle")):
             with open(
                 os.path.join(self._dataset_dir, "dataset.pickle"), "rb"
             ) as f:
-                self.questions, self.responses, self.user_list,
-                self.user2idx, self.q_list, self.q2idx = pickle.load(f)
-        except:
-            self.questions, self.responses, self.user_list,
-            self.user2idx, self.q_list, self.q2idx = \
+                self.questions, self.responses, self.user_list, \
+                    self.user2idx, self.q_list, self.q2idx = pickle.load(f)
+        else:
+            self.questions, self.responses, self.user_list, \
+                self.user2idx, self.q_list, self.q2idx = \
                 self._get_questions_responses(self._database)
 
     def _get_questions_responses(self, database):

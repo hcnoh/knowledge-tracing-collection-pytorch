@@ -1,0 +1,6 @@
+{
+    "DKT": {
+        "emb_size": 200,
+        "hidden_size": 100
+    }
+}

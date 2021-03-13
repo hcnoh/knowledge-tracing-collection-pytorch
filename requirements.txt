@@ -1,3 +1,4 @@
 jupyter
 matplotlib
 numpy
+pandas

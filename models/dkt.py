@@ -3,15 +3,14 @@ import torch
 
 from torch.nn import Module, Embedding, LSTM, Linear, Dropout
 from torch.nn.functional import one_hot, binary_cross_entropy
-from torch.nn.utils.rnn import pad_sequence
 from torch.optim import Adam
 from sklearn import metrics
 
 if torch.cuda.is_available():
-    from torch.cuda import FloatTensor, LongTensor
+    from torch.cuda import FloatTensor, LongTensor, BoolTensor
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
 else:
-    from torch import FloatTensor, LongTensor
+    from torch import FloatTensor, LongTensor, BoolTensor
 
 
 class DKT(Module):
@@ -22,7 +21,9 @@ class DKT(Module):
         self.hidden_size = hidden_size
 
         self.interaction_emb = Embedding(self.num_q * 2, self.emb_size)
-        self.lstm_layer = LSTM(self.emb_size, self.hidden_size)
+        self.lstm_layer = LSTM(
+            self.emb_size, self.hidden_size, batch_first=True
+        )
         self.out_layer = Linear(self.hidden_size, self.num_q)
         self.dropout_layer = Dropout()
 
@@ -36,7 +37,10 @@ class DKT(Module):
 
         return y
 
-    def train_model(self, questions, responses, train_config, pad_val=-1e+3):
+    def train_model(
+        self, questions, responses, targets, deltas, masks,
+        train_config, pad_val=-1e+3
+    ):
         batch_size = train_config["batch_size"]
         num_epochs = train_config["num_epochs"]
         train_ratio = train_config["train_ratio"]
@@ -44,41 +48,17 @@ class DKT(Module):
 
         train_idx = int(len(questions) * train_ratio)
 
-        train_questions = np.array(questions[:train_idx], dtype=object)
-        train_responses = np.array(responses[:train_idx], dtype=object)
+        train_questions = questions[:train_idx]
+        train_responses = responses[:train_idx]
+        train_targets = targets[:train_idx]
+        train_deltas = deltas[:train_idx]
+        train_masks = masks[:train_idx]
 
-        test_questions = [
-            LongTensor(q).unsqueeze(-1) for q in questions[train_idx:]
-        ]
-        test_responses = [
-            LongTensor(r).unsqueeze(-1) for r in responses[train_idx:]
-        ]
-
-        test_questions = pad_sequence(
-            test_questions, padding_value=pad_val
-        ).squeeze()
-        test_responses = pad_sequence(
-            test_responses, padding_value=pad_val
-        ).squeeze()
-
-        print(test_questions.shape)
-        print(test_responses.shape)
-        print(len(responses[train_idx:]))
-        print(np.max([arr.shape for arr in responses[train_idx:]]))
-
-        test_masks = (test_questions != pad_val)
-        test_questions, test_responses = \
-            test_questions * test_masks.long(), \
-            test_responses * test_masks.long()
-
-        test_delta = one_hot(test_questions[1:], self.num_q)
-        test_targets = test_responses[1:]
-
-        test_questions = test_questions[:-1]
-        test_responses = test_responses[:-1]
-        test_masks = test_masks[:-1]
-
-        test_targets = torch.masked_select(test_targets, test_masks)
+        test_questions = questions[train_idx:]
+        test_responses = responses[train_idx:]
+        test_targets = targets[train_idx:]
+        test_deltas = deltas[train_idx:]
+        test_masks = masks[train_idx:]
 
         opt = Adam(self.parameters(), learning_rate)
 
@@ -94,31 +74,22 @@ class DKT(Module):
 
                 q = train_questions[random_indices]
                 r = train_responses[random_indices]
-
-                q = [LongTensor(arr).unsqueeze(-1) for arr in q]
-                r = [LongTensor(arr).unsqueeze(-1) for arr in r]
-
-                q = pad_sequence(q, padding_value=pad_val).squeeze()
-                r = pad_sequence(r, padding_value=pad_val).squeeze()
-
-                mask = (q != pad_val)
-                q, r = q * mask.long(), r * mask.long()
-
-                delta = one_hot(q[1:], self.num_q)
-                target = r[1:]
-
-                q = q[:-1]
-                r = r[:-1]
-                mask = mask[:-1]
+                t = train_targets[random_indices]
+                d = train_deltas[random_indices]
+                m = train_masks[random_indices]
 
                 self.train()
 
-                y = self(q, r)
+                y = self(LongTensor(q), LongTensor(r))
 
                 opt.zero_grad()
                 loss = torch.masked_select(
-                    binary_cross_entropy((y * delta).sum(-1), target.float()),
-                    mask
+                    binary_cross_entropy(
+                        (FloatTensor(y) * one_hot(LongTensor(d), self.num_q))
+                        .sum(-1),
+                        FloatTensor(t)
+                    ),
+                    BoolTensor(m)
                 ).mean()
                 loss.backward()
                 opt.step()
@@ -127,9 +98,12 @@ class DKT(Module):
 
             self.eval()
 
-            test_y = (self(test_questions, test_responses) * test_delta)\
-                .sum(-1)
-            test_y = torch.masked_select(test_y, test_masks).detach().cpu()
+            test_y = (
+                self(FloatTensor(test_questions), FloatTensor(test_responses))
+                * one_hot(LongTensor(test_deltas), self.num_q)
+            ).sum(-1)
+            test_y = torch.masked_select(test_y, BoolTensor(test_masks))\
+                .detach().cpu()
 
             fpr, tpr, thresholds = metrics.roc_curve(
                 test_targets.numpy(), test_y.numpy()

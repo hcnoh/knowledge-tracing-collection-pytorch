@@ -78,6 +78,9 @@ class DKT(Module):
 
         opt = Adam(self.parameters(), learning_rate)
 
+        aucs = []
+        loss_means = []
+
         for i in range(1, num_epochs):
             loss_mean = []
             for _ in range(train_idx // batch_size):
@@ -130,7 +133,13 @@ class DKT(Module):
             auc = metrics.auc(fpr, tpr)
 
             loss_mean = np.mean(loss_mean)
+
             print(
                 "Epoch: {},   AUC: {},   Loss Mean: {}"
                 .format(i, auc, loss_mean)
             )
+
+            aucs.append(auc)
+            loss_means.append(loss_mean)
+
+        return aucs, loss_means

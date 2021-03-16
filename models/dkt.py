@@ -123,13 +123,13 @@ class DKT(Module):
                 loss.backward()
                 opt.step()
 
-                loss_mean.append(loss.detach().numpy())
+                loss_mean.append(loss.detach().cpu().numpy())
 
             self.eval()
 
             test_y = (self(test_questions, test_responses) * test_delta)\
                 .sum(-1)
-            test_y = torch.masked_select(test_y, test_masks).detach()
+            test_y = torch.masked_select(test_y, test_masks).detach().cpu()
 
             fpr, tpr, thresholds = metrics.roc_curve(
                 test_targets.numpy(), test_y.numpy()

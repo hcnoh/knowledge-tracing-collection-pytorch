@@ -44,35 +44,21 @@ class DKT(Module):
 
         train_idx = int(len(questions) * train_ratio)
 
-        questions = [LongTensor(q).unsqueeze(-1) for q in questions]
-        responses = [LongTensor(r).unsqueeze(-1) for r in responses]
+        train_questions = np.array(questions[:train_idx], dtype=object)
+        train_responses = np.array(responses[:train_idx], dtype=object)
 
-        train_questions = pad_sequence(
-            questions[:train_idx], padding_value=pad_val
-        ).squeeze()
-        train_responses = pad_sequence(
-            responses[:train_idx], padding_value=pad_val
-        ).squeeze()
-
-        train_masks = (train_questions != pad_val)
-        train_questions, train_responses = \
-            train_questions * train_masks.long(), \
-            train_responses * train_masks.long()
-
-        train_deltas = one_hot(train_questions[1:], self.num_q)
-        train_targets = train_responses[1:]
-
-        train_questions = train_questions[:-1]
-        train_responses = train_responses[:-1]
-        train_masks = train_masks[:-1]
-
-        # train_targets = torch.masked_select(train_targets, train_masks)
+        test_questions = [
+            LongTensor(q).unsqueeze(-1) for q in questions[train_idx:]
+        ]
+        test_responses = [
+            LongTensor(r).unsqueeze(-1) for r in responses[train_idx:]
+        ]
 
         test_questions = pad_sequence(
-            questions[train_idx:], padding_value=pad_val
+            test_questions, padding_value=pad_val
         ).squeeze()
         test_responses = pad_sequence(
-            responses[train_idx:], padding_value=pad_val
+            test_responses, padding_value=pad_val
         ).squeeze()
 
         print(test_questions.shape)
@@ -108,25 +94,22 @@ class DKT(Module):
 
                 q = train_questions[random_indices]
                 r = train_responses[random_indices]
-                m = train_masks[random_indices]
-                d = train_deltas[random_indices]
-                t = train_targets[random_indices]
 
-                # q = [LongTensor(arr).unsqueeze(-1) for arr in q]
-                # r = [LongTensor(arr).unsqueeze(-1) for arr in r]
+                q = [LongTensor(arr).unsqueeze(-1) for arr in q]
+                r = [LongTensor(arr).unsqueeze(-1) for arr in r]
 
-                # q = pad_sequence(q, padding_value=pad_val).squeeze()
-                # r = pad_sequence(r, padding_value=pad_val).squeeze()
+                q = pad_sequence(q, padding_value=pad_val).squeeze()
+                r = pad_sequence(r, padding_value=pad_val).squeeze()
 
-                # mask = (q != pad_val)
-                # q, r = q * mask.long(), r * mask.long()
+                mask = (q != pad_val)
+                q, r = q * mask.long(), r * mask.long()
 
-                # delta = one_hot(q[1:], self.num_q)
-                # target = r[1:]
+                delta = one_hot(q[1:], self.num_q)
+                target = r[1:]
 
-                # q = q[:-1]
-                # r = r[:-1]
-                # mask = mask[:-1]
+                q = q[:-1]
+                r = r[:-1]
+                mask = mask[:-1]
 
                 self.train()
 
@@ -134,7 +117,8 @@ class DKT(Module):
 
                 opt.zero_grad()
                 loss = torch.masked_select(
-                    binary_cross_entropy((y * d).sum(-1), t.float()), m
+                    binary_cross_entropy((y * delta).sum(-1), target.float()),
+                    mask
                 ).mean()
                 loss.backward()
                 opt.step()

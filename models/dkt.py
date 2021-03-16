@@ -99,7 +99,7 @@ class DKT(Module):
             self.eval()
 
             test_y = (
-                self(FloatTensor(test_questions), FloatTensor(test_responses))
+                self(LongTensor(test_questions), LongTensor(test_responses))
                 * one_hot(LongTensor(test_deltas), self.num_q)
             ).sum(-1)
             test_y = torch.masked_select(test_y, BoolTensor(test_masks))\

@@ -47,8 +47,26 @@ class DKT(Module):
         questions = [LongTensor(q).unsqueeze(-1) for q in questions]
         responses = [LongTensor(r).unsqueeze(-1) for r in responses]
 
-        train_questions = np.array(questions[:train_idx], dtype=object)
-        train_responses = np.array(responses[:train_idx], dtype=object)
+        train_questions = pad_sequence(
+            questions[:train_idx], padding_value=pad_val
+        ).squeeze()
+        train_responses = pad_sequence(
+            responses[:train_idx], padding_value=pad_val
+        ).squeeze()
+
+        train_masks = (train_questions != pad_val)
+        train_questions, train_responses = \
+            train_questions * train_masks.long(), \
+            train_responses * train_masks.long()
+
+        train_deltas = one_hot(train_questions[1:], self.num_q)
+        train_targets = train_responses[1:]
+
+        train_questions = train_questions[:-1]
+        train_responses = train_responses[:-1]
+        train_masks = train_masks[:-1]
+
+        # train_targets = torch.masked_select(train_targets, train_masks)
 
         test_questions = pad_sequence(
             questions[train_idx:], padding_value=pad_val
@@ -62,19 +80,19 @@ class DKT(Module):
         print(len(responses[train_idx:]))
         print(np.max([arr.shape for arr in responses[train_idx:]]))
 
-        test_mask = (test_questions != pad_val)
+        test_masks = (test_questions != pad_val)
         test_questions, test_responses = \
-            test_questions * test_mask.long(), \
-            test_responses * test_mask.long()
+            test_questions * test_masks.long(), \
+            test_responses * test_masks.long()
 
         test_delta = one_hot(test_questions[1:], self.num_q)
-        test_target = test_responses[1:]
+        test_targets = test_responses[1:]
 
         test_questions = test_questions[:-1]
         test_responses = test_responses[:-1]
-        test_mask = test_mask[:-1]
+        test_masks = test_masks[:-1]
 
-        test_target = torch.masked_select(test_target, test_mask)
+        test_targets = torch.masked_select(test_targets, test_masks)
 
         opt = Adam(self.parameters(), learning_rate)
 
@@ -90,22 +108,25 @@ class DKT(Module):
 
                 q = train_questions[random_indices]
                 r = train_responses[random_indices]
+                m = train_masks[random_indices]
+                d = train_deltas[random_indices]
+                t = train_targets[random_indices]
 
                 # q = [LongTensor(arr).unsqueeze(-1) for arr in q]
                 # r = [LongTensor(arr).unsqueeze(-1) for arr in r]
 
-                q = pad_sequence(q, padding_value=pad_val).squeeze()
-                r = pad_sequence(r, padding_value=pad_val).squeeze()
+                # q = pad_sequence(q, padding_value=pad_val).squeeze()
+                # r = pad_sequence(r, padding_value=pad_val).squeeze()
 
-                mask = (q != pad_val)
-                q, r = q * mask.long(), r * mask.long()
+                # mask = (q != pad_val)
+                # q, r = q * mask.long(), r * mask.long()
 
-                delta = one_hot(q[1:], self.num_q)
-                target = r[1:]
+                # delta = one_hot(q[1:], self.num_q)
+                # target = r[1:]
 
-                q = q[:-1]
-                r = r[:-1]
-                mask = mask[:-1]
+                # q = q[:-1]
+                # r = r[:-1]
+                # mask = mask[:-1]
 
                 self.train()
 
@@ -113,8 +134,7 @@ class DKT(Module):
 
                 opt.zero_grad()
                 loss = torch.masked_select(
-                    binary_cross_entropy((y * delta).sum(-1), target.float()),
-                    mask
+                    binary_cross_entropy((y * d).sum(-1), t.float()), m
                 ).mean()
                 loss.backward()
                 opt.step()
@@ -125,10 +145,10 @@ class DKT(Module):
 
             test_y = (self(test_questions, test_responses) * test_delta)\
                 .sum(-1)
-            test_y = torch.masked_select(test_y, test_mask).detach()
+            test_y = torch.masked_select(test_y, test_masks).detach()
 
             fpr, tpr, thresholds = metrics.roc_curve(
-                test_target.numpy(), test_y.numpy()
+                test_targets.numpy(), test_y.numpy()
             )
             auc = metrics.auc(fpr, tpr)
 

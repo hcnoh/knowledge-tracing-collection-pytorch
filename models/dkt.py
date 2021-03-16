@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 import torch
 
@@ -7,14 +5,13 @@ from torch.nn import Module, Embedding, LSTM, Linear, Dropout
 from torch.nn.functional import one_hot, binary_cross_entropy
 from torch.nn.utils.rnn import pad_sequence
 from torch.optim import Adam
+from sklearn import metrics
 
 if torch.cuda.is_available():
-    from torch.cuda import FloatTensor
-    from torch.cuda import LongTensor
+    from torch.cuda import FloatTensor, LongTensor
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
 else:
-    from torch import FloatTensor
-    from torch import LongTensor
+    from torch import FloatTensor, LongTensor
 
 
 class DKT(Module):
@@ -47,10 +44,37 @@ class DKT(Module):
 
         train_idx = int(len(questions) * train_ratio)
 
-        train_questions = np.array(questions[:train_idx])
-        train_responses = np.array(responses[:train_idx])
-        test_questions = np.array(questions[train_idx:])
-        test_responses = np.array(responses[train_idx:])
+        questions = [LongTensor(q).unsqueeze(-1) for q in questions]
+        responses = [LongTensor(r).unsqueeze(-1) for r in responses]
+
+        train_questions = np.array(questions[:train_idx], dtype=object)
+        train_responses = np.array(responses[:train_idx], dtype=object)
+
+        test_questions = pad_sequence(
+            questions[train_idx:], padding_value=pad_val
+        ).squeeze()
+        test_responses = pad_sequence(
+            responses[train_idx:], padding_value=pad_val
+        ).squeeze()
+
+        print(test_questions.shape)
+        print(test_responses.shape)
+        print(len(responses[train_idx:]))
+        print(np.max([arr.shape for arr in responses[train_idx:]]))
+
+        test_mask = (test_questions != pad_val)
+        test_questions, test_responses = \
+            test_questions * test_mask.long(), \
+            test_responses * test_mask.long()
+
+        test_delta = one_hot(test_questions[1:], self.num_q)
+        test_target = test_responses[1:]
+
+        test_questions = test_questions[:-1]
+        test_responses = test_responses[:-1]
+        test_mask = test_mask[:-1]
+
+        test_target = torch.masked_select(test_target, test_mask)
 
         opt = Adam(self.parameters(), learning_rate)
 
@@ -64,16 +88,17 @@ class DKT(Module):
                 q = train_questions[random_indices]
                 r = train_responses[random_indices]
 
-                q = [LongTensor(arr).unsqueeze(-1) for arr in q]
-                r = [LongTensor(arr).unsqueeze(-1) for arr in r]
+                # q = [LongTensor(arr).unsqueeze(-1) for arr in q]
+                # r = [LongTensor(arr).unsqueeze(-1) for arr in r]
 
                 q = pad_sequence(q, padding_value=pad_val).squeeze()
                 r = pad_sequence(r, padding_value=pad_val).squeeze()
 
-                mask = (q != pad_val).long()
-                q, r = q * mask, r * mask
+                mask = (q != pad_val)
+                q, r = q * mask.long(), r * mask.long()
 
                 delta = one_hot(q[1:], self.num_q)
+                target = r[1:]
 
                 q = q[:-1]
                 r = r[:-1]
@@ -82,19 +107,30 @@ class DKT(Module):
                 self.train()
 
                 y = self(q, r)
-                # y = self.dropout_layer(y)
-                # print(y.shape, delta.shape)
-                # print(y[0, 0, :] * delta[0, 0, :])
-
-                # print((y * delta).sum(-1).shape, r.shape)
 
                 opt.zero_grad()
-                loss = binary_cross_entropy((y * delta).sum(-1), r.float())\
-                    .mean()
+                loss = torch.masked_select(
+                    binary_cross_entropy((y * delta).sum(-1), target.float()),
+                    mask
+                ).mean()
                 loss.backward()
                 opt.step()
 
                 loss_mean.append(loss.detach().numpy())
 
+            self.eval()
+
+            test_y = (self(test_questions, test_responses) * test_delta)\
+                .sum(-1)
+            test_y = torch.masked_select(test_y, test_mask).detach()
+
+            fpr, tpr, thresholds = metrics.roc_curve(
+                test_target.numpy(), test_y.numpy()
+            )
+            auc = metrics.auc(fpr, tpr)
+
             loss_mean = np.mean(loss_mean)
-            print(i, loss_mean)
+            print(
+                "Epoch: {},   AUC: {},   Loss Mean: {}"
+                .format(i, auc, loss_mean)
+            )

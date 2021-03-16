@@ -1,6 +1,8 @@
-import numpy as np
 import argparse
 import json
+
+import numpy as np
+import torch
 
 from data_loaders.assistments import AssistmentsLoader
 from models.dkt import DKT
@@ -15,7 +17,10 @@ def main(model_name):
         train_config = config["train_config"]
 
     if model_name == "DKT":
-        model = DKT(loader.num_q, **model_config)
+        if torch.cuda.is_available():
+            model = DKT(loader.num_q, **model_config).cuda()
+        else:
+            model = DKT(loader.num_q, **model_config)
 
     print(train_config)
     model.train_model(loader.questions, loader.responses, train_config)

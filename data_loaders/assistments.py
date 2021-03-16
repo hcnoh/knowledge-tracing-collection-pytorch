@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 
 
-DATASET_DIR = "../../datasets/assistments/"
+DATASET_DIR = ".datasets/assistments/"
 
 
-class AssistmentsLoader(object):
+class AssistmentsLoader:
     def __init__(self, dataset_dir=DATASET_DIR):
         self._dataset_dir = dataset_dir
         self._csv_path = \
@@ -22,9 +22,9 @@ class AssistmentsLoader(object):
         self.num_user = np.unique(self._database["user_id"].values).shape[0]
         self.num_q = np.unique(self._database["skill_name"].unique()).shape[0]
 
-        if os.path.isfile(os.path.join(self._dataset_dir, "dataset.pickle")):
+        if os.path.isfile(os.path.join(self._dataset_dir, "dataset.pkl")):
             with open(
-                os.path.join(self._dataset_dir, "dataset.pickle"), "rb"
+                os.path.join(self._dataset_dir, "dataset.pkl"), "rb"
             ) as f:
                 self.questions, self.responses, self.user_list, \
                     self.user2idx, self.q_list, self.q2idx = pickle.load(f)
@@ -55,7 +55,7 @@ class AssistmentsLoader(object):
             responses.append(response)
 
         with open(
-            os.path.join(self._dataset_dir, "dataset.pickle"), "wb"
+            os.path.join(self._dataset_dir, "dataset.pkl"), "wb"
         ) as f:
             pickle.dump(
                 (questions, responses, user_list, user2idx, q_list, q2idx), f

@@ -105,8 +105,12 @@ class DKT(Module):
             test_y = torch.masked_select(test_y, BoolTensor(test_masks))\
                 .detach().cpu()
 
+            test_t = torch.masked_select(
+                LongTensor(test_targets), BoolTensor(test_masks)
+            ).detach().cpu()
+
             fpr, tpr, thresholds = metrics.roc_curve(
-                test_targets, test_y.numpy()
+                test_t.numpy(), test_y.numpy()
             )
             auc = metrics.auc(fpr, tpr)
 

@@ -106,7 +106,7 @@ class DKT(Module):
                 .detach().cpu()
 
             fpr, tpr, thresholds = metrics.roc_curve(
-                test_targets.numpy(), test_y.numpy()
+                test_targets, test_y.numpy()
             )
             auc = metrics.auc(fpr, tpr)
 

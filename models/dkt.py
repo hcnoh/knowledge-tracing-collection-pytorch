@@ -22,7 +22,7 @@ class DKT(Module):
 
         self.interaction_emb = Embedding(self.num_q * 2, self.emb_size)
         self.lstm_layer = LSTM(
-            self.emb_size, self.hidden_size, batch_first=True
+            self.emb_size, self.hidden_size, batch_first=False
         )
         self.out_layer = Linear(self.hidden_size, self.num_q)
         self.dropout_layer = Dropout()
@@ -81,16 +81,13 @@ class DKT(Module):
                 self.train()
 
                 y = self(LongTensor(q), LongTensor(r))
+                y = (y * one_hot(LongTensor(d), self.num_q)).sum(-1)
+
+                y = torch.masked_select(y, BoolTensor(m))
+                t = torch.masked_select(FloatTensor(t), BoolTensor(m))
 
                 opt.zero_grad()
-                loss = torch.masked_select(
-                    binary_cross_entropy(
-                        (FloatTensor(y) * one_hot(LongTensor(d), self.num_q))
-                        .sum(-1),
-                        FloatTensor(t)
-                    ),
-                    BoolTensor(m)
-                ).mean()
+                loss = binary_cross_entropy(y, t)
                 loss.backward()
                 opt.step()
 
@@ -98,9 +95,11 @@ class DKT(Module):
 
             self.eval()
 
+            test_y = self(
+                LongTensor(test_questions), LongTensor(test_responses)
+            )
             test_y = (
-                self(LongTensor(test_questions), LongTensor(test_responses))
-                * one_hot(LongTensor(test_deltas), self.num_q)
+                test_y * one_hot(LongTensor(test_deltas), self.num_q)
             ).sum(-1)
             test_y = torch.masked_select(test_y, BoolTensor(test_masks))\
                 .detach().cpu()
@@ -109,10 +108,9 @@ class DKT(Module):
                 LongTensor(test_targets), BoolTensor(test_masks)
             ).detach().cpu()
 
-            fpr, tpr, thresholds = metrics.roc_curve(
-                test_t.numpy(), test_y.numpy()
+            auc = metrics.roc_auc_score(
+                y_true=test_t.numpy(), y_score=test_y.numpy()
             )
-            auc = metrics.auc(fpr, tpr)
 
             loss_mean = np.mean(loss_mean)
 

@@ -54,7 +54,7 @@ def preprocess(loader, path, seq_len=200, pad_val=-1e+3):
         deltas.append(
             np.concatenate(
                 [
-                    q[i + 1:len(r)],
+                    q[i + 1:len(q)],
                     np.array([pad_val] * (i + 1 + seq_len - len(r)))
                 ]
             )
@@ -115,17 +115,17 @@ def main(model_name):
     deltas = preprocessed_dataset[3]
     masks = preprocessed_dataset[4]
 
-    print(np.concatenate(loader.responses).shape)
+    # print(np.concatenate(loader.responses).shape)
 
-    print(questions.shape)
-    print(responses.shape)
-    print(targets.shape)
-    print(masks.shape)
+    # print(questions.shape)
+    # print(responses.shape)
+    # print(targets.shape)
+    # print(masks.shape)
 
-    print(loader.responses[0])
-    print(responses[0])
-    print(targets[0])
-    print(masks[0])
+    # print(loader.responses[0])
+    # print(responses[0])
+    # print(targets[0])
+    # print(masks[0])
 
     # print(a)
 

@@ -65,7 +65,7 @@ class DKT(Module):
         aucs = []
         loss_means = []
 
-        for i in range(1, num_epochs):
+        for i in range(1, num_epochs + 1):
             loss_mean = []
             for _ in range(train_idx // batch_size):
                 random_indices = np.random.choice(

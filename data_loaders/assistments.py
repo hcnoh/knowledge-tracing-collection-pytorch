@@ -4,23 +4,24 @@ import pickle
 import numpy as np
 import pandas as pd
 
+from torch.utils.data import Dataset
+
 
 DATASET_DIR = ".datasets/assistments/"
 
 
-class AssistmentsLoader:
+class AssistmentsDataset(Dataset):
     def __init__(self, dataset_dir=DATASET_DIR):
         self.dataset_dir = dataset_dir
         self._csv_path = \
             os.path.join(self.dataset_dir, "skill_builder_data.csv")
 
         self._database = pd.read_csv(self._csv_path, encoding="ISO-8859-1")
-        self._database = \
-            self._database[(self._database["skill_name"].notnull())]
+        self._database.dropna(subset=["skill_id"], inplace=True)
         # Removed Nan quantities.
 
         self.num_user = np.unique(self._database["user_id"].values).shape[0]
-        self.num_q = np.unique(self._database["skill_name"].unique()).shape[0]
+        self.num_q = np.unique(self._database["skill_id"].unique()).shape[0]
 
         if os.path.isfile(os.path.join(self.dataset_dir, "dataset.pkl")):
             with open(
@@ -33,11 +34,19 @@ class AssistmentsLoader:
                 self.user2idx, self.q_list, self.q2idx = \
                 self._get_questions_responses(self._database)
 
+        self.len = len(self.questions)
+
+    def __getitem__(self, index):
+        return self.questions[index], self.responses[index]
+
+    def __len__(self):
+        return self.len
+
     def _get_questions_responses(self, database):
         user_list = np.unique(database["user_id"].values)
         user2idx = {user_list[idx]: idx for idx, _ in enumerate(user_list)}
 
-        q_list = np.unique(database["skill_name"].values)
+        q_list = np.unique(database["skill_id"].values)
         q2idx = {q_list[idx]: idx for idx, _ in enumerate(q_list)}
 
         questions = []
@@ -47,7 +56,7 @@ class AssistmentsLoader:
                 database[(database["user_id"] == user)].sort_values("order_id")
 
             question = \
-                np.array([q2idx[q] for q in user_data["skill_name"].values])
+                np.array([q2idx[q] for q in user_data["skill_id"].values])
             # {0, 1, ..., num_q-1}, Cardinality = num_q
             response = user_data["correct"].values  # {0, 1}, Cardinality = 2
 

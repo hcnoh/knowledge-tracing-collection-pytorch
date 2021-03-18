@@ -3,73 +3,19 @@ import argparse
 import json
 import pickle
 
-import numpy as np
 import torch
 
-from data_loaders.assistments import AssistmentsLoader
+from torch.utils.data import DataLoader, random_split
+from torch.nn.utils.rnn import pad_sequence
+
+if torch.cuda.is_available():
+    from torch.cuda import FloatTensor, LongTensor
+    torch.set_default_tensor_type(torch.cuda.FloatTensor)
+else:
+    from torch import FloatTensor, LongTensor
+
+from data_loaders.assistments import AssistmentsDataset
 from models.dkt import DKT
-
-
-def preprocess(loader, path, seq_len=200, pad_val=-1e+3):
-    questions = []
-    responses = []
-    targets = []
-    deltas = []
-
-    for q, r in zip(loader.questions, loader.responses):
-        q, r = np.array(q), np.array(r)
-        i = 0
-        while i + 1 + seq_len < len(q):
-            questions.append(q[i:i + seq_len])
-            responses.append(r[i:i + seq_len])
-            targets.append(r[i + 1:i + 1 + seq_len])
-            deltas.append(q[i + 1:i + 1 + seq_len])
-
-            i += seq_len
-
-        questions.append(
-            np.concatenate(
-                [
-                    q[i:len(q) - 1],
-                    np.array([pad_val] * (i + seq_len - len(q) + 1))
-                ]
-            )
-        )
-        responses.append(
-            np.concatenate(
-                [
-                    r[i:len(r) - 1],
-                    np.array([pad_val] * (i + seq_len - len(r) + 1))
-                ]
-            )
-        )
-        targets.append(
-            np.concatenate(
-                [
-                    r[i + 1:len(r)],
-                    np.array([pad_val] * (i + 1 + seq_len - len(r)))
-                ]
-            )
-        )
-        deltas.append(
-            np.concatenate(
-                [
-                    q[i + 1:len(q)],
-                    np.array([pad_val] * (i + 1 + seq_len - len(r)))
-                ]
-            )
-        )
-
-    questions = np.array(questions)
-    responses = np.array(responses)
-    targets = np.array(targets)
-    deltas = np.array(deltas)
-    masks = (questions != pad_val)
-
-    questions, responses, targets, deltas = \
-        questions * masks, responses * masks, targets * masks, deltas * masks
-
-    return questions, responses, targets, deltas, masks
 
 
 def main(model_name):
@@ -80,7 +26,7 @@ def main(model_name):
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
-    loader = AssistmentsLoader()
+    dataset = AssistmentsDataset()
 
     with open("config.json") as f:
         config = json.load(f)
@@ -94,45 +40,69 @@ def main(model_name):
 
     if model_name == "DKT":
         if torch.cuda.is_available():
-            model = DKT(loader.num_q, **model_config).cuda()
+            model = DKT(dataset.num_q, **model_config).cuda()
         else:
-            model = DKT(loader.num_q, **model_config)
+            model = DKT(dataset.num_q, **model_config)
 
-    preprocessed_dataset_path = \
-        loader.dataset_dir + "preprocessed_dataset.pkl"
-    if os.path.isfile(preprocessed_dataset_path):
-        with open(preprocessed_dataset_path, "rb") as f:
-            preprocessed_dataset = pickle.load(f)
-    else:
-        preprocessed_dataset = preprocess(loader, preprocessed_dataset_path)
+    batch_size = train_config["batch_size"]
+    num_epochs = train_config["num_epochs"]
+    train_ratio = train_config["train_ratio"]
+    learning_rate = train_config["learning_rate"]
+    pad_val = -1
 
-        with open(preprocessed_dataset_path, "wb") as f:
-            pickle.dump(preprocessed_dataset, f)
+    train_size = int(len(dataset) * train_ratio)
+    test_size = len(dataset) - train_size
 
-    questions = preprocessed_dataset[0]
-    responses = preprocessed_dataset[1]
-    targets = preprocessed_dataset[2]
-    deltas = preprocessed_dataset[3]
-    masks = preprocessed_dataset[4]
+    train_dataset, test_dataset = random_split(
+        dataset, [train_size, test_size]
+    )
 
-    # print(np.concatenate(loader.responses).shape)
+    def collate_fn(batch):
+        questions = []
+        responses = []
+        targets = []
+        deltas = []
 
-    # print(questions.shape)
-    # print(responses.shape)
-    # print(targets.shape)
-    # print(masks.shape)
+        for q, r in batch:
+            questions.append(LongTensor(q[:-1]))
+            responses.append(LongTensor(r[:-1]))
+            targets.append(FloatTensor(r[1:]))
+            deltas.append(LongTensor(q[1:]))
 
-    # print(loader.responses[0])
-    # print(responses[0])
-    # print(targets[0])
-    # print(masks[0])
+        questions = pad_sequence(
+            questions, batch_first=True, padding_value=pad_val
+        )
+        responses = pad_sequence(
+            responses, batch_first=True, padding_value=pad_val
+        )
+        targets = pad_sequence(
+            targets, batch_first=True, padding_value=pad_val
+        )
+        deltas = pad_sequence(
+            deltas, batch_first=True, padding_value=pad_val
+        )
 
-    # print(a)
+        masks = (questions != pad_val)
+
+        questions, responses, targets, deltas = \
+            questions * masks, responses * masks, targets * masks, \
+            deltas * masks
+
+        return questions, responses, targets, deltas, masks
+
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True,
+        collate_fn=collate_fn
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=test_size, shuffle=True,
+        collate_fn=collate_fn
+    )
 
     print(train_config)
     aucs, loss_means = \
         model.train_model(
-            questions, responses, targets, deltas, masks, train_config
+            train_loader, test_loader, num_epochs, learning_rate
         )
 
     with open(ckpt_path + "aucs.pkl", "wb") as f:

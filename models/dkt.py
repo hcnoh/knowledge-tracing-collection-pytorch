@@ -7,10 +7,7 @@ from torch.optim import Adam
 from sklearn import metrics
 
 if torch.cuda.is_available():
-    from torch.cuda import FloatTensor, LongTensor, BoolTensor
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
-else:
-    from torch import FloatTensor, LongTensor, BoolTensor
 
 
 class DKT(Module):
@@ -38,28 +35,8 @@ class DKT(Module):
         return y
 
     def train_model(
-        self, questions, responses, targets, deltas, masks,
-        train_config, pad_val=-1e+3
+        self, train_loader, test_loader, num_epochs, learning_rate
     ):
-        batch_size = train_config["batch_size"]
-        num_epochs = train_config["num_epochs"]
-        train_ratio = train_config["train_ratio"]
-        learning_rate = train_config["learning_rate"]
-
-        train_idx = int(len(questions) * train_ratio)
-
-        train_questions = questions[:train_idx]
-        train_responses = responses[:train_idx]
-        train_targets = targets[:train_idx]
-        train_deltas = deltas[:train_idx]
-        train_masks = masks[:train_idx]
-
-        test_questions = questions[train_idx:]
-        test_responses = responses[train_idx:]
-        test_targets = targets[train_idx:]
-        test_deltas = deltas[train_idx:]
-        test_masks = masks[train_idx:]
-
         opt = Adam(self.parameters(), learning_rate)
 
         aucs = []
@@ -67,24 +44,17 @@ class DKT(Module):
 
         for i in range(1, num_epochs + 1):
             loss_mean = []
-            for _ in range(train_idx // batch_size):
-                random_indices = np.random.choice(
-                    train_idx, batch_size, replace=False
-                )
 
-                q = train_questions[random_indices]
-                r = train_responses[random_indices]
-                t = train_targets[random_indices]
-                d = train_deltas[random_indices]
-                m = train_masks[random_indices]
+            for data in train_loader:
+                q, r, t, d, m = data
 
                 self.train()
 
-                y = self(LongTensor(q), LongTensor(r))
-                y = (y * one_hot(LongTensor(d), self.num_q)).sum(-1)
+                y = self(q, r)
+                y = (y * one_hot(d, self.num_q)).sum(-1)
 
-                y = torch.masked_select(y, BoolTensor(m))
-                t = torch.masked_select(FloatTensor(t), BoolTensor(m))
+                y = torch.masked_select(y, m)
+                t = torch.masked_select(t, m)
 
                 opt.zero_grad()
                 loss = binary_cross_entropy(y, t)
@@ -93,33 +63,30 @@ class DKT(Module):
 
                 loss_mean.append(loss.detach().cpu().numpy())
 
-            self.eval()
+            for data in test_loader:
+                q, r, t, d, m = data
 
-            test_y = self(
-                LongTensor(test_questions), LongTensor(test_responses)
-            )
-            test_y = (
-                test_y * one_hot(LongTensor(test_deltas), self.num_q)
-            ).sum(-1)
-            test_y = torch.masked_select(test_y, BoolTensor(test_masks))\
-                .detach().cpu()
+                self.eval()
 
-            test_t = torch.masked_select(
-                LongTensor(test_targets), BoolTensor(test_masks)
-            ).detach().cpu()
+                y = self(q, r)
+                y = (y * one_hot(d, self.num_q)).sum(-1)
 
-            auc = metrics.roc_auc_score(
-                y_true=test_t.numpy(), y_score=test_y.numpy()
-            )
+                y = torch.masked_select(y, m).detach().cpu()
+                t = torch.masked_select(t, m)\
+                    .detach().cpu()
 
-            loss_mean = np.mean(loss_mean)
+                auc = metrics.roc_auc_score(
+                    y_true=t.numpy(), y_score=y.numpy()
+                )
 
-            print(
-                "Epoch: {},   AUC: {},   Loss Mean: {}"
-                .format(i, auc, loss_mean)
-            )
+                loss_mean = np.mean(loss_mean)
 
-            aucs.append(auc)
-            loss_means.append(loss_mean)
+                print(
+                    "Epoch: {},   AUC: {},   Loss Mean: {}"
+                    .format(i, auc, loss_mean)
+                )
+
+                aucs.append(auc)
+                loss_means.append(loss_mean)
 
         return aucs, loss_means

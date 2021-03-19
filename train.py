@@ -17,6 +17,7 @@ else:
 
 from data_loaders.assistments import AssistmentsDataset
 from models.dkt import DKT
+from models.dkvmn import DKVMN
 
 
 def main(model_name):
@@ -44,6 +45,11 @@ def main(model_name):
             model = DKT(dataset.num_q, **model_config).cuda()
         else:
             model = DKT(dataset.num_q, **model_config)
+    elif model_name == "dkvmn":
+        if torch.cuda.is_available():
+            model = DKVMN(dataset.num_q, **model_config).cuda()
+        else:
+            model = DKVMN(dataset.num_q, **model_config)
 
     batch_size = train_config["batch_size"]
     num_epochs = train_config["num_epochs"]
@@ -124,7 +130,7 @@ if __name__ == "__main__":
         "--model_name",
         type=str,
         default="dkt",
-        help="The name of the model to train. The possible models are in [dkt]. \
+        help="The name of the model to train. The possible models are in [dkt, dkvmn]. \
             The default model is dkt."
     )
     args = parser.parse_args()

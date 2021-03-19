@@ -1,13 +1,18 @@
 {
     "train_config": {
-        "batch_size": 32,
-        "num_epochs": 50,
+        "batch_size": 64,
+        "num_epochs": 100,
         "train_ratio": 0.9,
         "learning_rate": 1e-3,
-        "optimizer": "sgd"
+        "optimizer": "adam"
     },
     "dkt": {
         "emb_size": 200,
         "hidden_size": 200
+    },
+    "dkvmn": {
+        "dim_k": 50,
+        "dim_v": 50,
+        "N": 20
     }
 }

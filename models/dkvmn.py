@@ -31,7 +31,7 @@ class DKVMN(Module):
 
     def forward(self, q, r):
         qr = q + self.num_q * r
-        Mvt = self.Mv
+        Mvt = self.Mv.unsqueeze(0)
 
         p = []
         Mv = []
@@ -49,9 +49,9 @@ class DKVMN(Module):
 
             # Write Process
             et = sigmoid(self.e_layer(vt))
-            Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)).sum(1))
+            Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)))
             at = tanh(self.a_layer(vt))
-            Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1)).sum(1)
+            Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1))
 
             p.append(pt)
             Mv.append(Mvt)

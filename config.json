@@ -2,10 +2,11 @@
     "train_config": {
         "batch_size": 32,
         "num_epochs": 50,
-        "train_ratio": 0.8,
-        "learning_rate": 1e-3
+        "train_ratio": 0.9,
+        "learning_rate": 1e-3,
+        "optimizer": "sgd"
     },
-    "DKT": {
+    "dkt": {
         "emb_size": 200,
         "hidden_size": 200
     }

@@ -7,6 +7,7 @@ import torch
 
 from torch.utils.data import DataLoader, random_split
 from torch.nn.utils.rnn import pad_sequence
+from torch.optim import SGD, Adam
 
 if torch.cuda.is_available():
     from torch.cuda import FloatTensor, LongTensor
@@ -38,7 +39,7 @@ def main(model_name):
     with open(ckpt_path + "train_config.json", "w") as f:
         json.dump(train_config, f, indent=4)
 
-    if model_name == "DKT":
+    if model_name == "dkt":
         if torch.cuda.is_available():
             model = DKT(dataset.num_q, **model_config).cuda()
         else:
@@ -48,7 +49,7 @@ def main(model_name):
     num_epochs = train_config["num_epochs"]
     train_ratio = train_config["train_ratio"]
     learning_rate = train_config["learning_rate"]
-    pad_val = -1
+    optimizer = train_config["optimizer"]  # can be [sgd, adam]
 
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
@@ -57,7 +58,7 @@ def main(model_name):
         dataset, [train_size, test_size]
     )
 
-    def collate_fn(batch):
+    def collate_fn(batch, pad_val=-1):
         questions = []
         responses = []
         targets = []
@@ -99,10 +100,14 @@ def main(model_name):
         collate_fn=collate_fn
     )
 
-    print(train_config)
+    if optimizer == "sgd":
+        opt = SGD(model.parameters(), learning_rate, momentum=0.9)
+    elif optimizer == "adam":
+        opt = Adam(model.parameters(), learning_rate)
+
     aucs, loss_means = \
         model.train_model(
-            train_loader, test_loader, num_epochs, learning_rate
+            train_loader, test_loader, num_epochs, learning_rate, opt
         )
 
     with open(ckpt_path + "aucs.pkl", "wb") as f:
@@ -118,9 +123,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name",
         type=str,
-        default="DKT",
-        help="The name of the model to train. The possible models are in [DKT]. \
-            The default model is DKT."
+        default="dkt",
+        help="The name of the model to train. The possible models are in [dkt]. \
+            The default model is dkt."
     )
     args = parser.parse_args()
 

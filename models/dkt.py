@@ -3,7 +3,6 @@ import torch
 
 from torch.nn import Module, Embedding, LSTM, Linear, Dropout
 from torch.nn.functional import one_hot, binary_cross_entropy
-from torch.optim import Adam
 from sklearn import metrics
 
 if torch.cuda.is_available():
@@ -35,10 +34,8 @@ class DKT(Module):
         return y
 
     def train_model(
-        self, train_loader, test_loader, num_epochs, learning_rate
+        self, train_loader, test_loader, num_epochs, learning_rate, opt
     ):
-        opt = Adam(self.parameters(), learning_rate)
-
         aucs = []
         loss_means = []
 

@@ -6,12 +6,14 @@ import pandas as pd
 
 from torch.utils.data import Dataset
 
+from models.utils import match_seq_len
+
 
 DATASET_DIR = ".datasets/assistments/"
 
 
 class AssistmentsDataset(Dataset):
-    def __init__(self, dataset_dir=DATASET_DIR):
+    def __init__(self, seq_len, dataset_dir=DATASET_DIR):
         self.dataset_dir = dataset_dir
         self._csv_path = \
             os.path.join(self.dataset_dir, "skill_builder_data.csv")
@@ -33,6 +35,10 @@ class AssistmentsDataset(Dataset):
             self.questions, self.responses, self.user_list, \
                 self.user2idx, self.q_list, self.q2idx = \
                 self._get_questions_responses(self._database)
+
+        if seq_len:
+            self.questions, self.responses = \
+                match_seq_len(self.questions, self.responses, seq_len)
 
         self.len = len(self.questions)
 

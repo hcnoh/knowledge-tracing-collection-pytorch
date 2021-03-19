@@ -6,18 +6,12 @@ import pickle
 import torch
 
 from torch.utils.data import DataLoader, random_split
-from torch.nn.utils.rnn import pad_sequence
 from torch.optim import SGD, Adam
-
-if torch.cuda.is_available():
-    from torch.cuda import FloatTensor, LongTensor
-    torch.set_default_tensor_type(torch.cuda.FloatTensor)
-else:
-    from torch import FloatTensor, LongTensor
 
 from data_loaders.assistments import AssistmentsDataset
 from models.dkt import DKT
 from models.dkvmn import DKVMN
+from models.utils import collate_fn
 
 
 def main(model_name):
@@ -28,12 +22,21 @@ def main(model_name):
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
-    dataset = AssistmentsDataset()
-
     with open("config.json") as f:
         config = json.load(f)
         model_config = config[model_name]
         train_config = config["train_config"]
+
+    batch_size = train_config["batch_size"]
+    num_epochs = train_config["num_epochs"]
+    train_ratio = train_config["train_ratio"]
+    learning_rate = train_config["learning_rate"]
+    optimizer = train_config["optimizer"]  # can be [sgd, adam]
+    seq_len = train_config["seq_len"]
+
+    dataset = AssistmentsDataset(seq_len)
+    import numpy as np
+    print(np.array(dataset.questions).shape)
 
     with open(ckpt_path + "model_config.json", "w") as f:
         json.dump(model_config, f, indent=4)
@@ -51,51 +54,12 @@ def main(model_name):
         else:
             model = DKVMN(dataset.num_q, **model_config)
 
-    batch_size = train_config["batch_size"]
-    num_epochs = train_config["num_epochs"]
-    train_ratio = train_config["train_ratio"]
-    learning_rate = train_config["learning_rate"]
-    optimizer = train_config["optimizer"]  # can be [sgd, adam]
-
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
 
     train_dataset, test_dataset = random_split(
         dataset, [train_size, test_size]
     )
-
-    def collate_fn(batch, pad_val=-1):
-        questions = []
-        responses = []
-        targets = []
-        deltas = []
-
-        for q, r in batch:
-            questions.append(LongTensor(q[:-1]))
-            responses.append(LongTensor(r[:-1]))
-            targets.append(FloatTensor(r[1:]))
-            deltas.append(LongTensor(q[1:]))
-
-        questions = pad_sequence(
-            questions, batch_first=True, padding_value=pad_val
-        )
-        responses = pad_sequence(
-            responses, batch_first=True, padding_value=pad_val
-        )
-        targets = pad_sequence(
-            targets, batch_first=True, padding_value=pad_val
-        )
-        deltas = pad_sequence(
-            deltas, batch_first=True, padding_value=pad_val
-        )
-
-        masks = (questions != pad_val)
-
-        questions, responses, targets, deltas = \
-            questions * masks, responses * masks, targets * masks, \
-            deltas * masks
-
-        return questions, responses, targets, deltas, masks
 
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,

@@ -4,7 +4,8 @@
         "num_epochs": 100,
         "train_ratio": 0.9,
         "learning_rate": 1e-3,
-        "optimizer": "adam"
+        "optimizer": "adam",
+        "seq_len": 200
     },
     "dkt": {
         "emb_size": 200,

@@ -102,7 +102,7 @@ def main(model_name):
         collate_fn=collate_fn
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=test_size, shuffle=True,
+        test_dataset, batch_size=batch_size, shuffle=True,
         collate_fn=collate_fn
     )
 

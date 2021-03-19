@@ -78,7 +78,7 @@ class DKT(Module):
                         y_true=t.numpy(), y_score=y.numpy()
                     )
                 )
-                weights.append(torch.prod(t.shape).cpu().numpy())
+                weights.append(torch.prod(torch.tensor(t.shape)).cpu().numpy())
 
             auc = np.average(auc, weights=weights)
             loss_mean = np.mean(loss_mean)

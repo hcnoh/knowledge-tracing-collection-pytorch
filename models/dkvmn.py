@@ -40,10 +40,10 @@ class DKVMN(Module):
             kt = self.k_emb_layer(qt)
             vt = self.v_emb_layer(qrt)
 
-            wt = softmax(torch.dot(kt, self.Mk))
+            wt = softmax(torch.matmul(kt, self.Mk), dim=-1)
 
             # Read Process
-            rt = torch.dot(wt, self.Mv)
+            rt = torch.matmul(wt, self.Mv)
             ft = tanh(self.f_layer(torch.cat([rt, kt], dim=-1)))
             pt = sigmoid(self.p_layer(ft))
 

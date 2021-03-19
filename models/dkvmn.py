@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from torch.nn import Module, Embedding, Linear
-from torch.nn.functional import softmax, tanh, sigmoid, binary_cross_entropy
+from torch.nn.functional import binary_cross_entropy
 from sklearn import metrics
 
 if torch.cuda.is_available():
@@ -40,24 +40,24 @@ class DKVMN(Module):
             kt = self.k_emb_layer(qt)
             vt = self.v_emb_layer(qrt)
 
-            wt = softmax(torch.matmul(kt, self.Mk), dim=-1)
+            wt = torch.softmax(torch.matmul(kt, self.Mk), dim=-1)
 
             # Read Process
             rt = torch.matmul(wt, self.Mv)
-            ft = tanh(self.f_layer(torch.cat([rt, kt], dim=-1)))
-            pt = sigmoid(self.p_layer(ft))
+            ft = torch.tanh(self.f_layer(torch.cat([rt, kt], dim=-1)))
+            pt = torch.sigmoid(self.p_layer(ft)).squeeze()
 
             # Write Process
-            et = sigmoid(self.e_layer(vt))
+            et = torch.sigmoid(self.e_layer(vt))
             Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)))
-            at = tanh(self.a_layer(vt))
+            at = torch.tanh(self.a_layer(vt))
             Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1))
 
             p.append(pt)
             Mv.append(Mvt)
 
-        p = torch.cat(p, dim=0)
-        Mv = torch.cat(Mv, dim=0)
+        p = torch.stack(p, dim=1)
+        Mv = torch.stack(Mv, dim=1)
 
         return p, Mv
 

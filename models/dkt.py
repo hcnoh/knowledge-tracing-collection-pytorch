@@ -60,8 +60,6 @@ class DKT(Module):
 
                 loss_mean.append(loss.detach().cpu().numpy())
 
-            auc = []
-            weights = []
             for data in test_loader:
                 q, r, t, d, m = data
 
@@ -73,22 +71,18 @@ class DKT(Module):
                 y = torch.masked_select(y, m).detach().cpu()
                 t = torch.masked_select(t, m).detach().cpu()
 
-                auc.append(
-                    metrics.roc_auc_score(
-                        y_true=t.numpy(), y_score=y.numpy()
-                    )
+                auc = metrics.roc_auc_score(
+                    y_true=t.numpy(), y_score=y.numpy()
                 )
-                weights.append(torch.prod(torch.tensor(t.shape)).cpu().numpy())
 
-            auc = np.average(auc, weights=weights)
-            loss_mean = np.mean(loss_mean)
+                loss_mean = np.mean(loss_mean)
 
-            print(
-                "Epoch: {},   AUC: {},   Loss Mean: {}"
-                .format(i, auc, loss_mean)
-            )
+                print(
+                    "Epoch: {},   AUC: {},   Loss Mean: {}"
+                    .format(i, auc, loss_mean)
+                )
 
-            aucs.append(auc)
-            loss_means.append(loss_mean)
+                aucs.append(auc)
+                loss_means.append(loss_mean)
 
         return aucs, loss_means

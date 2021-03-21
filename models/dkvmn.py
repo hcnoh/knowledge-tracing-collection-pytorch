@@ -2,7 +2,9 @@ import numpy as np
 import torch
 
 from torch.nn import Module, Embedding, Linear
+from torch.nn.init import normal_
 from torch.nn.functional import binary_cross_entropy
+# from torch.nn.utils import clip_grad_norm_
 from sklearn import metrics
 
 if torch.cuda.is_available():
@@ -21,6 +23,9 @@ class DKVMN(Module):
         self.Mk = torch.Tensor(self.dim_k, self.N)
         self.Mv = torch.Tensor(self.N, self.dim_v)
 
+        normal_(self.Mk)
+        normal_(self.Mv)
+
         self.v_emb_layer = Embedding(self.num_q * 2, self.dim_v)
 
         self.f_layer = Linear(self.dim_k * 2, self.dim_k)
@@ -31,7 +36,7 @@ class DKVMN(Module):
 
     def forward(self, q, r):
         qr = q + self.num_q * r
-        Mvt = self.Mv.unsqueeze(0)
+        Mvt = self.Mv.unsqueeze(0)  # [1, N, dim_v]
 
         p = []
         Mv = []
@@ -43,7 +48,7 @@ class DKVMN(Module):
             wt = torch.softmax(torch.matmul(kt, self.Mk), dim=-1)
 
             # Read Process
-            rt = torch.matmul(wt, self.Mv)
+            rt = (wt.unsqueeze(-1) * Mvt).sum(1)
             ft = torch.tanh(self.f_layer(torch.cat([rt, kt], dim=-1)))
             pt = torch.sigmoid(self.p_layer(ft)).squeeze()
 
@@ -51,6 +56,7 @@ class DKVMN(Module):
             et = torch.sigmoid(self.e_layer(vt))
             Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)))
             at = torch.tanh(self.a_layer(vt))
+            # [batch_size, dim_v]
             Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1))
 
             p.append(pt)
@@ -71,48 +77,47 @@ class DKVMN(Module):
             loss_mean = []
 
             for data in train_loader:
-                q, r, _, d, m = data
+                q, r, _, _, m = data
 
                 self.train()
 
                 p, _ = self(q, r)
                 p = torch.masked_select(p, m)
                 t = torch.masked_select(r, m).float()
+                # t = torch.masked_select(t, m)
 
                 opt.zero_grad()
                 loss = binary_cross_entropy(p, t)
                 loss.backward()
+                # clip_grad_norm_(self.parameters(), 50.)
                 opt.step()
 
                 loss_mean.append(loss.detach().cpu().numpy())
 
-            auc = []
-            weights = []
             for data in test_loader:
-                q, r, t, d, m = data
+                q, r, _, _, m = data
 
                 self.eval()
 
                 p, _ = self(q, r)
                 p = torch.masked_select(p, m).detach().cpu()
                 t = torch.masked_select(r, m).float().detach().cpu()
+                # t = torch.masked_select(t, m).detach().cpu()
 
-                auc.append(
-                    metrics.roc_auc_score(
-                        y_true=t.numpy(), y_score=p.numpy()
-                    )
+                # print(t[0] - p[0])
+
+                auc = metrics.roc_auc_score(
+                    y_true=t.numpy(), y_score=p.numpy()
                 )
-                weights.append(torch.prod(torch.tensor(t.shape)).cpu().numpy())
 
-            auc = np.average(auc, weights=weights)
-            loss_mean = np.mean(loss_mean)
+                loss_mean = np.mean(loss_mean)
 
-            print(
-                "Epoch: {},   AUC: {},   Loss Mean: {}"
-                .format(i, auc, loss_mean)
-            )
+                print(
+                    "Epoch: {},   AUC: {},   Loss Mean: {}"
+                    .format(i, auc, loss_mean)
+                )
 
-            aucs.append(auc)
-            loss_means.append(loss_mean)
+                aucs.append(auc)
+                loss_means.append(loss_mean)
 
         return aucs, loss_means

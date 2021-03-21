@@ -36,7 +36,7 @@ class DKVMN(Module):
 
     def forward(self, q, r):
         qr = q + self.num_q * r
-        Mvt = self.Mv.unsqueeze(0)  # [1, N, dim_v]
+        Mvt = self.Mv.unsqueeze(0)
 
         p = []
         Mv = []
@@ -56,7 +56,6 @@ class DKVMN(Module):
             et = torch.sigmoid(self.e_layer(vt))
             Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)))
             at = torch.tanh(self.a_layer(vt))
-            # [batch_size, dim_v]
             Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1))
 
             p.append(pt)

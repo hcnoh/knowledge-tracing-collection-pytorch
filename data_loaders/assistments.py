@@ -19,11 +19,11 @@ class AssistmentsDataset(Dataset):
             os.path.join(self.dataset_dir, "skill_builder_data.csv")
 
         self._database = pd.read_csv(self._csv_path, encoding="ISO-8859-1")
-        self._database.dropna(subset=["skill_id"], inplace=True)
+        self._database.dropna(subset=["skill_name"], inplace=True)
         # Removed Nan quantities.
 
         self.num_user = np.unique(self._database["user_id"].values).shape[0]
-        self.num_q = np.unique(self._database["skill_id"].unique()).shape[0]
+        self.num_q = np.unique(self._database["skill_name"].unique()).shape[0]
 
         if os.path.isfile(os.path.join(self.dataset_dir, "dataset.pkl")):
             with open(
@@ -52,7 +52,7 @@ class AssistmentsDataset(Dataset):
         user_list = np.unique(database["user_id"].values)
         user2idx = {user_list[idx]: idx for idx, _ in enumerate(user_list)}
 
-        q_list = np.unique(database["skill_id"].values)
+        q_list = np.unique(database["skill_name"].values)
         q2idx = {q_list[idx]: idx for idx, _ in enumerate(q_list)}
 
         questions = []
@@ -62,7 +62,7 @@ class AssistmentsDataset(Dataset):
                 database[(database["user_id"] == user)].sort_values("order_id")
 
             question = \
-                np.array([q2idx[q] for q in user_data["skill_id"].values])
+                np.array([q2idx[q] for q in user_data["skill_name"].values])
             # {0, 1, ..., num_q-1}, Cardinality = num_q
             response = user_data["correct"].values  # {0, 1}, Cardinality = 2
 

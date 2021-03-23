@@ -11,6 +11,7 @@ from torch.optim import SGD, Adam
 from data_loaders.assistments import AssistmentsDataset
 from models.dkt import DKT
 from models.dkvmn import DKVMN
+from models.sakt import SAKT
 from models.utils import collate_fn
 
 
@@ -53,6 +54,11 @@ def main(model_name):
             model = DKVMN(dataset.num_q, **model_config).cuda()
         else:
             model = DKVMN(dataset.num_q, **model_config)
+    elif model_name == "sakt":
+        if torch.cuda.is_available():
+            model = SAKT(dataset.num_q, **model_config).cuda()
+        else:
+            model = SAKT(dataset.num_q, **model_config)
 
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size

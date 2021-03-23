@@ -83,12 +83,10 @@ class DKVMN(Module):
                 p, _ = self(q, r)
                 p = torch.masked_select(p, m)
                 t = torch.masked_select(r, m).float()
-                # t = torch.masked_select(t, m)
 
                 opt.zero_grad()
                 loss = binary_cross_entropy(p, t)
                 loss.backward()
-                # clip_grad_norm_(self.parameters(), 50.)
                 opt.step()
 
                 loss_mean.append(loss.detach().cpu().numpy())

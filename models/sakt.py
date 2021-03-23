@@ -3,6 +3,9 @@ import torch
 
 from torch.nn import Module, Embedding, Sequential, Linear, ReLU, \
     MultiheadAttention, LayerNorm
+from torch.nn.init import normal_
+from torch.nn.functional import binary_cross_entropy
+from sklearn import metrics
 
 
 class SAKT(Module):
@@ -16,7 +19,9 @@ class SAKT(Module):
 
         self.M = Embedding(self.num_q * 2, self.d)
         self.E = Embedding(self.num_q, d)
-        self.P = Embedding(self.n, self.d)
+        self.P = torch.Tensor(self.n, self.d)
+
+        normal_(self.P)
 
         self.attn = MultiheadAttention(self.d, self.num_attn_heads)
         self.attn_layer_norm = LayerNorm([self.n, self.d])
@@ -33,20 +38,75 @@ class SAKT(Module):
     def forward(self, q, r):
         x = q + self.num_q * r
 
-        M = self.M(x)
-        E = self.E(q)
+        M = self.M(x).permute(1, 0, 2)
+        E = self.E(q).permute(1, 0, 2)
         P = self.P.unsqueeze(1)
+
+        causal_mask = torch.triu(
+            torch.ones([E.shape[0], M.shape[0]]), diagonal=1
+        ).bool()
 
         M += P
 
-        # mask should be added...
+        S, attn_weights = self.attn(E, M, M, attn_mask=causal_mask)
+        S = S.permute(1, 0, 2)
+        M = M.permute(1, 0, 2)
 
-        S, attn_weights = self.attn(E, M, M)
         S = self.attn_layer_norm(S + M)
 
         F = self.FFN(S)
         F = self.FFN_layer_norm(F + S)
 
-        p = torch.sigmoid(self.pred(F))
+        p = torch.sigmoid(self.pred(F)).squeeze()
 
-        return p
+        return p, attn_weights
+
+    def train_model(
+        self, train_loader, test_loader, num_epochs, learning_rate, opt
+    ):
+        aucs = []
+        loss_means = []
+
+        for i in range(1, num_epochs + 1):
+            loss_mean = []
+
+            for data in train_loader:
+                q, r, _, _, m = data
+
+                self.train()
+
+                p, _ = self(q, r)
+                p = torch.masked_select(p, m)
+                t = torch.masked_select(r, m).float()
+
+                opt.zero_grad()
+                loss = binary_cross_entropy(p, t)
+                loss.backward()
+                opt.step()
+
+                loss_mean.append(loss.detach().cpu().numpy())
+
+            for data in test_loader:
+                q, r, _, _, m = data
+
+                self.eval()
+
+                p, _ = self(q, r)
+                p = torch.masked_select(p, m).detach().cpu()
+                t = torch.masked_select(r, m).float().detach().cpu()
+
+                auc = metrics.roc_auc_score(
+                    y_true=t.numpy(), y_score=p.numpy()
+                )
+
+                loss_mean = np.mean(loss_mean)
+
+                print(
+                    "Epoch: {},   AUC: {},   Loss Mean: {}"
+                    .format(i, auc, loss_mean)
+                )
+
+                aucs.append(auc)
+                loss_means.append(loss_mean)
+
+        return aucs, loss_means

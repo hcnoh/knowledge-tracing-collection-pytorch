@@ -1,8 +1,9 @@
 # Knowledge Tracing Collection with PyTorch
 
 This repository is a collection of the following knowledge tracing algorithms:
-- **Deep Knowledge Tracing**
-- **Dynamic Key-Value Memory Networks**
+- **Deep Knowledge Tracing (DKT)**
+- **Dynamic Key-Value Memory Networks for Knowledge Tracing (DKVMN)**
+- **A Self-Attentive model for Knowledge Tracing (SAKT)**
 
 More algorithms will be added on this repository soon.
 
@@ -38,12 +39,15 @@ In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsd
 
 ## Training Results
 
-![](/assets/img/README/README_2021-03-22-17-39-48.png)
+![](/assets/img/README/README_2021-03-24-09-50-45.png)
 
-![](/assets/img/README/README_2021-03-22-17-39-57.png)
+![](/assets/img/README/README_2021-03-24-09-50-52.png)
 
 We can check that `Adam Optimizer` has better performance on the training of DKT and DKVMN.
+
+SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
 - DKVMN: [Dynamic Key-Value Memory Networks for Knowledge Tracing](https://arxiv.org/pdf/1611.08108.pdf)
+- SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)

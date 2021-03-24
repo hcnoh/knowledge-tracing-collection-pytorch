@@ -35,11 +35,11 @@ class SAKT(Module):
 
         self.pred = Linear(self.d, 1)
 
-    def forward(self, q, r):
+    def forward(self, q, r, q_shifted):
         x = q + self.num_q * r
 
         M = self.M(x).permute(1, 0, 2)
-        E = self.E(q).permute(1, 0, 2)
+        E = self.E(q_shifted).permute(1, 0, 2)
         P = self.P.unsqueeze(1)
 
         causal_mask = torch.triu(
@@ -71,13 +71,13 @@ class SAKT(Module):
             loss_mean = []
 
             for data in train_loader:
-                q, r, _, _, m = data
+                q, r, t, d, m = data
 
                 self.train()
 
-                p, _ = self(q, r)
+                p, _ = self(q, r, d)
                 p = torch.masked_select(p, m)
-                t = torch.masked_select(r, m).float()
+                t = torch.masked_select(t, m)
 
                 opt.zero_grad()
                 loss = binary_cross_entropy(p, t)
@@ -87,13 +87,13 @@ class SAKT(Module):
                 loss_mean.append(loss.detach().cpu().numpy())
 
             for data in test_loader:
-                q, r, _, _, m = data
+                q, r, t, d, m = data
 
                 self.eval()
 
-                p, _ = self(q, r)
+                p, _ = self(q, r, d)
                 p = torch.masked_select(p, m).detach().cpu()
-                t = torch.masked_select(r, m).float().detach().cpu()
+                t = torch.masked_select(t, m).detach().cpu()
 
                 auc = metrics.roc_auc_score(
                     y_true=t.numpy(), y_score=p.numpy()

@@ -39,13 +39,13 @@ In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsd
 
 ## Training Results
 
-![](/assets/img/README/README_2021-03-24-09-50-45.png)
+![](/assets/img/README/README_2021-03-26-14-52-36.png)
 
-![](/assets/img/README/README_2021-03-24-09-50-52.png)
+![](/assets/img/README/README_2021-03-26-14-52-44.png)
 
 We can check that `Adam Optimizer` has better performance on the training of DKT and DKVMN.
 
-SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT.
+SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
 - Implemented Dropout in SAKT and get the results of them.

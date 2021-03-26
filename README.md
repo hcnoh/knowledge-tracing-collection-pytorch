@@ -47,6 +47,9 @@ We can check that `Adam Optimizer` has better performance on the training of DKT
 
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT.
 
+## Recent Works
+- Implemented Dropout in SAKT and get the results of them.
+
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
 - DKVMN: [Dynamic Key-Value Memory Networks for Knowledge Tracing](https://arxiv.org/pdf/1611.08108.pdf)

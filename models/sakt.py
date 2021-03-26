@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from torch.nn import Module, Embedding, Sequential, Linear, ReLU, \
-    MultiheadAttention, LayerNorm
+    MultiheadAttention, LayerNorm, Dropout
 from torch.nn.init import normal_
 from torch.nn.functional import binary_cross_entropy
 from sklearn import metrics
@@ -23,17 +23,24 @@ class SAKT(Module):
 
         normal_(self.P)
 
-        self.attn = MultiheadAttention(self.d, self.num_attn_heads)
+        self.attn = MultiheadAttention(
+            self.d, self.num_attn_heads, dropout=0.2
+        )
         self.attn_layer_norm = LayerNorm([self.n, self.d])
 
         self.FFN = Sequential(
             Linear(self.d, self.d),
+            Dropout(0.2),
             ReLU(),
-            Linear(self.d, self.d)
+            Linear(self.d, self.d),
+            Dropout(0.2),
         )
         self.FFN_layer_norm = LayerNorm([self.n, self.d])
 
-        self.pred = Linear(self.d, 1)
+        self.pred = Sequential(
+            Linear(self.d, 1),
+            Dropout(0.2),
+        )
 
     def forward(self, q, r, q_shifted):
         x = q + self.num_q * r

@@ -99,9 +99,6 @@ class DKVMN(Module):
                 p, _ = self(q, r)
                 p = torch.masked_select(p, m).detach().cpu()
                 t = torch.masked_select(r, m).float().detach().cpu()
-                # t = torch.masked_select(t, m).detach().cpu()
-
-                # print(t[0] - p[0])
 
                 auc = metrics.roc_auc_score(
                     y_true=t.numpy(), y_score=p.numpy()

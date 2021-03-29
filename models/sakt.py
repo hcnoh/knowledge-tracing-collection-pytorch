@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from torch.nn import Module, Embedding, Sequential, Linear, ReLU, \
+from torch.nn import Module, Parameter, Embedding, Sequential, Linear, ReLU, \
     MultiheadAttention, LayerNorm, Dropout
 from torch.nn.init import normal_
 from torch.nn.functional import binary_cross_entropy
@@ -19,7 +19,7 @@ class SAKT(Module):
 
         self.M = Embedding(self.num_q * 2, self.d)
         self.E = Embedding(self.num_q, d)
-        self.P = torch.Tensor(self.n, self.d)
+        self.P = Parameter(torch.Tensor(self.n, self.d))
 
         normal_(self.P)
 

@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from torch.nn import Module, Embedding, Linear
+from torch.nn import Module, Parameter, Embedding, Linear
 from torch.nn.init import normal_
 from torch.nn.functional import binary_cross_entropy
 # from torch.nn.utils import clip_grad_norm_
@@ -20,8 +20,8 @@ class DKVMN(Module):
         self.N = N
 
         self.k_emb_layer = Embedding(self.num_q, self.dim_k)
-        self.Mk = torch.Tensor(self.dim_k, self.N)
-        self.Mv = torch.Tensor(self.N, self.dim_v)
+        self.Mk = Parameter(torch.Tensor(self.dim_k, self.N))
+        self.Mv = Parameter(torch.Tensor(self.N, self.dim_v))
 
         normal_(self.Mk)
         normal_(self.Mv)

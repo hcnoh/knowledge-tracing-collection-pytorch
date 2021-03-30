@@ -49,6 +49,7 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 
 ## Recent Works
 - Implemented Dropout in SAKT and get the results of them.
+- Corrected SAKT and DKVMN to get their parameters trainable.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)

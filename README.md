@@ -39,9 +39,9 @@ In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsd
 
 ## Training Results
 
-![](/assets/img/README/README_2021-03-26-14-52-36.png)
+![](/assets/img/README/README_2021-03-30-13-47-22.png)
 
-![](/assets/img/README/README_2021-03-26-14-52-44.png)
+![](/assets/img/README/README_2021-03-30-13-47-29.png)
 
 We can check that `Adam Optimizer` has better performance on the training of DKT and DKVMN.
 

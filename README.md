@@ -24,7 +24,13 @@ In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsd
 3. Install PyTorch. The version of PyTorch should be greater or equal than 1.7.0. This repository provides the CUDA usage.
 
 ## Training and Running
-1. Modify `config.json` as your machine setting.
+1. Modify `config.json` as your machine setting. The following explanations are for understanding `train_config` of `config.json`:
+    - `batch_size`: The batch size of the training process. Default: 64
+    - `num_epochs`: The number of epochs of the training process. Default: 100
+    - `train_ratio`: The ratio of the training dataset to split the whole dataset. Default: 0.9
+    - `learning_rate`: The learning of the optimizer for the training process. Default: 1e-3
+    - `optimizer`: The optimizer to use in the training process. The possible optimizers are ["sgd", "adam"]. Default: "adam"
+    - `seq_len`: The sequence length for the dataset to use in the training process. Default: 200
 2. Execute training process by `train.py`. An example of usage for `train.py` are following:
 
     ```bash

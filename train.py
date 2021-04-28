@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from torch.optim import SGD, Adam
 
-from data_loaders.assistments import AssistmentsDataset
+from data_loaders.assistments import AssistmentsDataset, DATASET_DIR
 from models.dkt import DKT
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
@@ -36,8 +36,6 @@ def main(model_name):
     seq_len = train_config["seq_len"]
 
     dataset = AssistmentsDataset(seq_len)
-    import numpy as np
-    print(np.array(dataset.questions).shape)
 
     with open(ckpt_path + "model_config.json", "w") as f:
         json.dump(model_config, f, indent=4)
@@ -63,9 +61,19 @@ def main(model_name):
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
 
-    train_dataset, test_dataset = random_split(
-        dataset, [train_size, test_size]
-    )
+    if os.path.exists("{}train_dataset.pkl".format(DATASET_DIR)):
+        with open("{}train_dataset.pkl".format(DATASET_DIR), "rb") as f:
+            train_dataset = pickle.load(f)
+        with open("{}test_dataset.pkl".format(DATASET_DIR), "rb") as f:
+            test_dataset = pickle.load(f)
+    else:
+        train_dataset, test_dataset = random_split(
+            dataset, [train_size, test_size]
+        )
+        with open("{}train_dataset.pkl".format(DATASET_DIR), "wb") as f:
+            pickle.dump(train_dataset, f)
+        with open("{}test_dataset.pkl".format(DATASET_DIR), "wb") as f:
+            pickle.dump(test_dataset, f)
 
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,

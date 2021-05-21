@@ -91,27 +91,28 @@ class DKVMN(Module):
 
                 loss_mean.append(loss.detach().cpu().numpy())
 
-            for data in test_loader:
-                q, r, _, _, m = data
+            with torch.no_grad():
+                for data in test_loader:
+                    q, r, _, _, m = data
 
-                self.eval()
+                    self.eval()
 
-                p, _ = self(q, r)
-                p = torch.masked_select(p, m).detach().cpu()
-                t = torch.masked_select(r, m).float().detach().cpu()
+                    p, _ = self(q, r)
+                    p = torch.masked_select(p, m).detach().cpu()
+                    t = torch.masked_select(r, m).float().detach().cpu()
 
-                auc = metrics.roc_auc_score(
-                    y_true=t.numpy(), y_score=p.numpy()
-                )
+                    auc = metrics.roc_auc_score(
+                        y_true=t.numpy(), y_score=p.numpy()
+                    )
 
-                loss_mean = np.mean(loss_mean)
+                    loss_mean = np.mean(loss_mean)
 
-                print(
-                    "Epoch: {},   AUC: {},   Loss Mean: {}"
-                    .format(i, auc, loss_mean)
-                )
+                    print(
+                        "Epoch: {},   AUC: {},   Loss Mean: {}"
+                        .format(i, auc, loss_mean)
+                    )
 
-                aucs.append(auc)
-                loss_means.append(loss_mean)
+                    aucs.append(auc)
+                    loss_means.append(loss_mean)
 
         return aucs, loss_means

@@ -9,21 +9,21 @@ from torch.utils.data import Dataset
 from models.utils import match_seq_len
 
 
-DATASET_DIR = ".datasets/assistments/"
+DATASET_DIR = ".datasets/assistments2009/"
 
 
-class AssistmentsDataset(Dataset):
+class Assistments2009Dataset(Dataset):
     def __init__(self, seq_len, dataset_dir=DATASET_DIR):
         self.dataset_dir = dataset_dir
         self._csv_path = \
             os.path.join(self.dataset_dir, "skill_builder_data.csv")
 
-        self._database = pd.read_csv(self._csv_path, encoding="ISO-8859-1")
-        self._database.dropna(subset=["skill_name"], inplace=True)
+        self._df = pd.read_csv(self._csv_path, encoding="ISO-8859-1")
+        self._df.dropna(subset=["skill_name"], inplace=True)
         # Removed Nan quantities.
 
-        self.num_user = np.unique(self._database["user_id"].values).shape[0]
-        self.num_q = np.unique(self._database["skill_name"].unique()).shape[0]
+        self.num_user = np.unique(self._df["user_id"].values).shape[0]
+        self.num_q = np.unique(self._df["skill_name"].unique()).shape[0]
 
         if os.path.isfile(os.path.join(self.dataset_dir, "dataset.pkl")):
             with open(
@@ -34,7 +34,7 @@ class AssistmentsDataset(Dataset):
         else:
             self.questions, self.responses, self.user_list, \
                 self.user2idx, self.q_list, self.q2idx = \
-                self._get_questions_responses(self._database)
+                self._get_questions_responses(self._df)
 
         if seq_len:
             self.questions, self.responses = \
@@ -48,18 +48,18 @@ class AssistmentsDataset(Dataset):
     def __len__(self):
         return self.len
 
-    def _get_questions_responses(self, database):
-        user_list = np.unique(database["user_id"].values)
+    def _set_questions_responses(self, df):
+        user_list = np.unique(df["user_id"].values)
         user2idx = {user_list[idx]: idx for idx, _ in enumerate(user_list)}
 
-        q_list = np.unique(database["skill_name"].values)
+        q_list = np.unique(df["skill_name"].values)
         q2idx = {q_list[idx]: idx for idx, _ in enumerate(q_list)}
 
         questions = []
         responses = []
         for user in user_list:
             user_data = \
-                database[(database["user_id"] == user)].sort_values("order_id")
+                df[(df["user_id"] == user)].sort_values("order_id")
 
             question = \
                 np.array([q2idx[q] for q in user_data["skill_name"].values])

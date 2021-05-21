@@ -8,18 +8,23 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from torch.optim import SGD, Adam
 
-from data_loaders.assistments import AssistmentsDataset, DATASET_DIR
+from data_loaders.assistments2009 import Assistments2009Dataset
+from data_loaders.assistments2015 import Assistments2015Dataset
 from models.dkt import DKT
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
 from models.utils import collate_fn
 
 
-def main(model_name):
+def main(model_name, dataset_name):
     if not os.path.isdir(".ckpts"):
         os.mkdir(".ckpts")
 
     ckpt_path = ".ckpts/{}/".format(model_name)
+    if not os.path.isdir(ckpt_path):
+        os.mkdir(ckpt_path)
+
+    ckpt_path = ckpt_path + "/{}/".format(dataset_name)
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
@@ -35,7 +40,10 @@ def main(model_name):
     optimizer = train_config["optimizer"]  # can be [sgd, adam]
     seq_len = train_config["seq_len"]
 
-    dataset = AssistmentsDataset(seq_len)
+    if dataset_name == "assistments2009":
+        dataset = Assistments2009Dataset(seq_len)
+    elif dataset_name == "assistments2015":
+        dataset = Assistments2015Dataset(seq_len)
 
     with open(ckpt_path + "model_config.json", "w") as f:
         json.dump(model_config, f, indent=4)
@@ -61,19 +69,24 @@ def main(model_name):
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
 
-    if os.path.exists("{}train_dataset.pkl".format(DATASET_DIR)):
-        with open("{}train_dataset.pkl".format(DATASET_DIR), "rb") as f:
-            train_dataset = pickle.load(f)
-        with open("{}test_dataset.pkl".format(DATASET_DIR), "rb") as f:
-            test_dataset = pickle.load(f)
+    train_dataset, test_dataset = random_split(
+        dataset, [train_size, test_size]
+    )
+
+    if os.path.exists("{}train_indices.pkl".format(dataset.dataset_dir)):
+        with open(
+            "{}train_indices.pkl".format(dataset.dataset_dir), "rb"
+        ) as f:
+            train_dataset.indices = pickle.load(f)
+        with open("{}test_indices.pkl".format(dataset.dataset_dir), "rb") as f:
+            test_dataset.indices = pickle.load(f)
     else:
-        train_dataset, test_dataset = random_split(
-            dataset, [train_size, test_size]
-        )
-        with open("{}train_dataset.pkl".format(DATASET_DIR), "wb") as f:
-            pickle.dump(train_dataset, f)
-        with open("{}test_dataset.pkl".format(DATASET_DIR), "wb") as f:
-            pickle.dump(test_dataset, f)
+        with open(
+            "{}train_indices.pkl".format(dataset.dataset_dir), "wb"
+        ) as f:
+            pickle.dump(train_dataset.indices, f)
+        with open("{}test_indices.pkl".format(dataset.dataset_dir), "wb") as f:
+            pickle.dump(test_dataset.indices, f)
 
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,
@@ -112,6 +125,14 @@ if __name__ == "__main__":
             The possible models are in [dkt, dkvmn, sakt]. \
             The default model is dkt."
     )
+    parser.add_argument(
+        "--dataset_name",
+        type=str,
+        default="assistments2009",
+        help="The name of the dataset to use in training. \
+            The possible datasets are in [assistments2009, assistments2015]. \
+            The default dataset is assistments2009."
+    )
     args = parser.parse_args()
 
-    main(args.model_name)
+    main(args.model_name, args.dataset_name)

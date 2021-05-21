@@ -10,7 +10,13 @@ More algorithms will be added on this repository soon.
 In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data) "skill-builder" dataset are used. You need to download the dataset on the following path:
 
 ```
-.datasets/assistments/
+.datasets/assistments2009/
+```
+
+Also, you can use the [ASSISTments2015](https://sites.google.com/site/assistmentsdata/home/2015-assistments-skill-builder-data) "skill-builder" dataset. Similarly you need to download them on the following path:
+
+```
+.datasets/assistments2015/
 ```
 
 ## Install Dependencies
@@ -45,17 +51,16 @@ In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsd
 
 ## Training Results
 
-![](/assets/img/README/README_2021-03-30-13-47-22.png)
+![](/assets/img/README/README_2021-05-21-09-16-23.png)
 
-![](/assets/img/README/README_2021-03-30-13-47-29.png)
-
-We can check that `Adam Optimizer` has better performance on the training of DKT and DKVMN.
+The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
 - Implemented Dropout in SAKT and get the results of them.
 - Corrected SAKT and DKVMN to get their parameters trainable.
+- A new dataset(ASSISTments2015) was added. The results for them will be uploaded soon.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)

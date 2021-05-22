@@ -9,13 +9,13 @@ from sklearn import metrics
 
 
 class SAKT(Module):
-    def __init__(self, num_q, n, d, num_attn_heads):
+    def __init__(self, num_q, n, d, num_attn_heads, dropout):
         super(SAKT, self).__init__()
-
         self.num_q = num_q
         self.n = n
         self.d = d
         self.num_attn_heads = num_attn_heads
+        self.dropout = dropout
 
         self.M = Embedding(self.num_q * 2, self.d)
         self.E = Embedding(self.num_q, d)
@@ -24,22 +24,22 @@ class SAKT(Module):
         normal_(self.P)
 
         self.attn = MultiheadAttention(
-            self.d, self.num_attn_heads, dropout=0.2
+            self.d, self.num_attn_heads, dropout=self.dropout
         )
         self.attn_layer_norm = LayerNorm([self.n, self.d])
 
         self.FFN = Sequential(
             Linear(self.d, self.d),
-            Dropout(0.2),
+            Dropout(self.dropout),
             ReLU(),
             Linear(self.d, self.d),
-            Dropout(0.2),
+            Dropout(self.dropout),
         )
         self.FFN_layer_norm = LayerNorm([self.n, self.d])
 
         self.pred = Sequential(
             Linear(self.d, 1),
-            Dropout(0.2),
+            Dropout(self.dropout),
         )
 
     def forward(self, q, r, q_shifted):

@@ -60,10 +60,10 @@ class SAKT(Module):
         S, attn_weights = self.attn(E, M, M, attn_mask=causal_mask)
         S = self.attn_dropout(S)
         S = S.permute(1, 0, 2)
-        E = E.permute(1, 0, 2)
         M = M.permute(1, 0, 2)
+        E = E.permute(1, 0, 2)
 
-        S = self.attn_layer_norm(S + E + M)
+        S = self.attn_layer_norm(S + M + E)
 
         F = self.FFN(S)
         F = self.FFN_layer_norm(F + S)

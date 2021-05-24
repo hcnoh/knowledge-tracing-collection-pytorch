@@ -103,9 +103,7 @@ def main(model_name, dataset_name):
         opt = Adam(model.parameters(), learning_rate)
 
     aucs, loss_means = \
-        model.train_model(
-            train_loader, test_loader, num_epochs, learning_rate, opt
-        )
+        model.train_model(train_loader, test_loader, num_epochs, opt)
 
     with open(ckpt_path + "aucs.pkl", "wb") as f:
         pickle.dump(aucs, f)

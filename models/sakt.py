@@ -42,10 +42,7 @@ class SAKT(Module):
         )
         self.FFN_layer_norm = LayerNorm([self.d])
 
-        self.pred = Sequential(
-            Linear(self.d, 1),
-            Dropout(self.dropout),
-        )
+        self.pred = Linear(self.d, 1)
 
     def forward(self, q, r, q_shifted):
         x = q + self.num_q * r
@@ -61,10 +58,11 @@ class SAKT(Module):
         M += P
 
         S, attn_weights = self.attn(E, M, M, attn_mask=causal_mask)
+        S = self.attn_dropout(S)
         S = S.permute(1, 0, 2)
-        M = M.permute(1, 0, 2)
+        E = E.permute(1, 0, 2)
 
-        S = self.attn_layer_norm(S + M)
+        S = self.attn_layer_norm(S + E)
 
         F = self.FFN(S)
         F = self.FFN_layer_norm(F + S)

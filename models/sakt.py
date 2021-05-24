@@ -61,8 +61,9 @@ class SAKT(Module):
         S = self.attn_dropout(S)
         S = S.permute(1, 0, 2)
         E = E.permute(1, 0, 2)
+        M = M.permute(1, 0, 2)
 
-        S = self.attn_layer_norm(S + E)
+        S = self.attn_layer_norm(S + E + M)
 
         F = self.FFN(S)
         F = self.FFN_layer_norm(F + S)

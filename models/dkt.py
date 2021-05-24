@@ -33,9 +33,7 @@ class DKT(Module):
 
         return y
 
-    def train_model(
-        self, train_loader, test_loader, num_epochs, learning_rate, opt
-    ):
+    def train_model(self, train_loader, test_loader, num_epochs, opt):
         aucs = []
         loss_means = []
 

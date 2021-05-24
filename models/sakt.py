@@ -9,6 +9,10 @@ from sklearn import metrics
 
 
 class SAKT(Module):
+    '''
+        I implemented this class with reference to: \
+        https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer
+    '''
     def __init__(self, num_q, n, d, num_attn_heads, dropout):
         super(SAKT, self).__init__()
         self.num_q = num_q
@@ -26,16 +30,17 @@ class SAKT(Module):
         self.attn = MultiheadAttention(
             self.d, self.num_attn_heads, dropout=self.dropout
         )
-        self.attn_layer_norm = LayerNorm([self.n, self.d])
+        self.attn_dropout = Dropout(self.dropout)
+        self.attn_layer_norm = LayerNorm([self.d])
 
         self.FFN = Sequential(
             Linear(self.d, self.d),
-            Dropout(self.dropout),
             ReLU(),
+            Dropout(self.dropout),
             Linear(self.d, self.d),
             Dropout(self.dropout),
         )
-        self.FFN_layer_norm = LayerNorm([self.n, self.d])
+        self.FFN_layer_norm = LayerNorm([self.d])
 
         self.pred = Sequential(
             Linear(self.d, 1),
@@ -68,9 +73,7 @@ class SAKT(Module):
 
         return p, attn_weights
 
-    def train_model(
-        self, train_loader, test_loader, num_epochs, learning_rate, opt
-    ):
+    def train_model(self, train_loader, test_loader, num_epochs, opt):
         aucs = []
         loss_means = []
 

@@ -79,9 +79,6 @@ class SSAKT(Module):
         ):
             S, attn_weights = attn(E, M, M, attn_mask=causal_mask)
             S = attn_dropout(S)
-            S = S.permute(1, 0, 2)
-            M = M.permute(1, 0, 2)
-            E = E.permute(1, 0, 2)
 
             S = attn_layer_norm(S + M + E)
 
@@ -89,6 +86,10 @@ class SSAKT(Module):
             F = FFN_layer_norm(F + S)
 
             E = F
+
+        S = S.permute(1, 0, 2)
+        M = M.permute(1, 0, 2)
+        E = E.permute(1, 0, 2)
 
         p = torch.sigmoid(self.pred(F)).squeeze()
 

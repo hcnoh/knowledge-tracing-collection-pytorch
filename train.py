@@ -129,7 +129,7 @@ if __name__ == "__main__":
         type=str,
         default="dkt",
         help="The name of the model to train. \
-            The possible models are in [dkt, dkvmn, sakt]. \
+            The possible models are in [dkt, dkvmn, sakt, ssakt]. \
             The default model is dkt."
     )
     parser.add_argument(

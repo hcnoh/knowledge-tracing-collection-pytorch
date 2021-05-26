@@ -4,6 +4,7 @@ This repository is a collection of the following knowledge tracing algorithms:
 - **Deep Knowledge Tracing (DKT)**
 - **Dynamic Key-Value Memory Networks for Knowledge Tracing (DKVMN)**
 - **A Self-Attentive model for Knowledge Tracing (SAKT)**
+- **A Stacked variant of SAKT (SSAKT)**
 
 More algorithms will be added on this repository soon.
 
@@ -58,12 +59,13 @@ The fact that `Adam Optimizer` has better performance on the training of DKT and
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
-- Implemented Dropout in SAKT and get the results of them.
-- Corrected SAKT and DKVMN to get their parameters trainable.
-- A new dataset(ASSISTments2015) was added. The results for them will be uploaded soon.
+- A new dataset(ASSISTments2015) was added on this repository. The results for them will be uploaded soon.
+- A new model(SSAKT) was added on this repository.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
 - DKVMN: [Dynamic Key-Value Memory Networks for Knowledge Tracing](https://arxiv.org/pdf/1611.08108.pdf)
 - SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
+- The first introduction of SSAKT: [Towards an Appropriate Query, Key, and Value
+Computation for Knowledge Tracing](https://arxiv.org/pdf/2002.07033.pdf)

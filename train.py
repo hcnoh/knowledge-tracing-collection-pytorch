@@ -13,6 +13,7 @@ from data_loaders.assistments2015 import Assistments2015Dataset
 from models.dkt import DKT
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
+from models.ssakt import SSAKT
 from models.utils import collate_fn
 
 
@@ -65,6 +66,14 @@ def main(model_name, dataset_name):
             model = SAKT(dataset.num_q, **model_config).cuda()
         else:
             model = SAKT(dataset.num_q, **model_config)
+    elif model_name == "ssakt":
+        if torch.cuda.is_available():
+            model = SSAKT(dataset.num_q, **model_config).cuda()
+        else:
+            model = SSAKT(dataset.num_q, **model_config)
+    else:
+        print("The wrong model name was used...")
+        return
 
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size

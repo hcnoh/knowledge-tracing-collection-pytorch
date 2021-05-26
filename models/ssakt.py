@@ -87,9 +87,7 @@ class SSAKT(Module):
 
             E = F
 
-        S = S.permute(1, 0, 2)
-        M = M.permute(1, 0, 2)
-        E = E.permute(1, 0, 2)
+        F = F.permute(1, 0, 2)
 
         p = torch.sigmoid(self.pred(F)).squeeze()
 

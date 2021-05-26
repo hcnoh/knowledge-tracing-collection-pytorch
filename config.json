@@ -21,5 +21,12 @@
         "d": 30,
         "num_attn_heads": 5,
         "dropout": 0.2
+    },
+    "ssakt": {
+        "n": 200,
+        "d": 30,
+        "num_attn_heads": 5,
+        "num_attn_layers": 3,
+        "dropout": 0.2
     }
 }

@@ -48,7 +48,7 @@ class Assistments2009Dataset(Dataset):
     def __len__(self):
         return self.len
 
-    def _set_questions_responses(self, df):
+    def _get_questions_responses(self, df):
         user_list = np.unique(df["user_id"].values)
         user2idx = {user_list[idx]: idx for idx, _ in enumerate(user_list)}
 

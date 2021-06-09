@@ -1,32 +1,32 @@
 {
     "train_config": {
         "batch_size": 64,
-        "num_epochs": 100,
+        "num_epochs": 200,
         "train_ratio": 0.9,
         "learning_rate": 1e-3,
         "optimizer": "adam",
-        "seq_len": 200
+        "seq_len": 100
     },
     "dkt": {
-        "emb_size": 200,
-        "hidden_size": 200
+        "emb_size": 50,
+        "hidden_size": 50
     },
     "dkvmn": {
-        "dim_k": 50,
-        "dim_v": 50,
-        "N": 20
+        "dim_k": 30,
+        "dim_v": 30,
+        "N": 10
     },
     "sakt": {
-        "n": 200,
+        "n": 100,
         "d": 30,
         "num_attn_heads": 5,
-        "dropout": 0.2
+        "dropout": 0.3
     },
     "ssakt": {
-        "n": 200,
+        "n": 100,
         "d": 30,
         "num_attn_heads": 5,
         "num_attn_layers": 3,
-        "dropout": 0.2
+        "dropout": 0.3
     }
 }

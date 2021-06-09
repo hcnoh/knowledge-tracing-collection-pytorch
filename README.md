@@ -53,10 +53,10 @@ Also, you can use the [ASSISTments2015](https://sites.google.com/site/assistment
 ## Training Results
 
 ### ASSISTments2009 Result
-![](/assets/img/README/README_2021-05-21-09-16-23.png)
+![](/assets/img/README/README_2021-06-09-15-34-20.png)
 
 ### ASSISTments2015 Result
-![](/assets/img/README/README_2021-06-01-10-24-23.png)
+![](/assets/img/README/README_2021-06-09-15-34-40.png)
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
@@ -65,6 +65,7 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 ## Recent Works
 - The result for ASSISTments2015 dataset was uploaded.
 - A new model(SSAKT) was added on this repository.
+- The new result for a new hyperparameter setting.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)

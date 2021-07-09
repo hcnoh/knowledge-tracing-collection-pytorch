@@ -8,8 +8,9 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from torch.optim import SGD, Adam
 
-from data_loaders.assistments2009 import Assistments2009Dataset
+from data_loaders.assist2009 import ASSIST2009
 from data_loaders.assistments2015 import Assistments2015Dataset
+from data_loaders.kddcup_20052006 import KDDCUP20052006
 from models.dkt import DKT
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
@@ -41,10 +42,12 @@ def main(model_name, dataset_name):
     optimizer = train_config["optimizer"]  # can be [sgd, adam]
     seq_len = train_config["seq_len"]
 
-    if dataset_name == "assistments2009":
-        dataset = Assistments2009Dataset(seq_len)
+    if dataset_name == "ASSIST2009":
+        dataset = ASSIST2009(seq_len)
     elif dataset_name == "assistments2015":
         dataset = Assistments2015Dataset(seq_len)
+    elif dataset_name == "kddcup_20052006":
+        dataset = KDDCUP20052006(seq_len)
 
     with open(ckpt_path + "model_config.json", "w") as f:
         json.dump(model_config, f, indent=4)
@@ -135,10 +138,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset_name",
         type=str,
-        default="assistments2009",
+        default="ASSIST2009",
         help="The name of the dataset to use in training. \
-            The possible datasets are in [assistments2009, assistments2015]. \
-            The default dataset is assistments2009."
+            The possible datasets are in \
+            [ASSIST2009, assistments2015, kddcup_20052006]. \
+            The default dataset is ASSIST2009."
     )
     args = parser.parse_args()
 

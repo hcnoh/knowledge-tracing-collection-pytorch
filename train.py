@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, random_split
 from torch.optim import SGD, Adam
 
 from data_loaders.assist2009 import ASSIST2009
-from data_loaders.assistments2015 import Assistments2015Dataset
+from data_loaders.assist2015 import ASSIST2015
 from data_loaders.kddcup_20052006 import KDDCUP20052006
 from models.dkt import DKT
 from models.dkvmn import DKVMN
@@ -22,11 +22,11 @@ def main(model_name, dataset_name):
     if not os.path.isdir(".ckpts"):
         os.mkdir(".ckpts")
 
-    ckpt_path = ".ckpts/{}/".format(model_name)
+    ckpt_path = os.path.join(".ckpts", model_name)
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
-    ckpt_path = ckpt_path + "/{}/".format(dataset_name)
+    ckpt_path = os.path.join(ckpt_path, dataset_name)
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
@@ -44,14 +44,14 @@ def main(model_name, dataset_name):
 
     if dataset_name == "ASSIST2009":
         dataset = ASSIST2009(seq_len)
-    elif dataset_name == "assistments2015":
-        dataset = Assistments2015Dataset(seq_len)
+    elif dataset_name == "ASSIST2015":
+        dataset = ASSIST2015(seq_len)
     elif dataset_name == "kddcup_20052006":
         dataset = KDDCUP20052006(seq_len)
 
-    with open(ckpt_path + "model_config.json", "w") as f:
+    with open(os.path.join(ckpt_path, "model_config.json"), "w") as f:
         json.dump(model_config, f, indent=4)
-    with open(ckpt_path + "train_config.json", "w") as f:
+    with open(os.path.join(ckpt_path, "train_config.json"), "w") as f:
         json.dump(train_config, f, indent=4)
 
     if model_name == "dkt":
@@ -85,19 +85,23 @@ def main(model_name, dataset_name):
         dataset, [train_size, test_size]
     )
 
-    if os.path.exists("{}train_indices.pkl".format(dataset.dataset_dir)):
+    if os.path.exists(os.path.join(dataset.dataset_dir, "train_indices.pkl")):
         with open(
-            "{}train_indices.pkl".format(dataset.dataset_dir), "rb"
+            os.path.join(dataset.dataset_dir, "train_indices.pkl"), "rb"
         ) as f:
             train_dataset.indices = pickle.load(f)
-        with open("{}test_indices.pkl".format(dataset.dataset_dir), "rb") as f:
+        with open(
+            os.path.join(dataset.dataset_dir, "test_indices.pkl"), "rb"
+        ) as f:
             test_dataset.indices = pickle.load(f)
     else:
         with open(
-            "{}train_indices.pkl".format(dataset.dataset_dir), "wb"
+            os.path.join(dataset.dataset_dir, "train_indices.pkl"), "wb"
         ) as f:
             pickle.dump(train_dataset.indices, f)
-        with open("{}test_indices.pkl".format(dataset.dataset_dir), "wb") as f:
+        with open(
+            os.path.join(dataset.dataset_dir, "test_indices.pkl"), "wb"
+        ) as f:
             pickle.dump(test_dataset.indices, f)
 
     train_loader = DataLoader(
@@ -117,12 +121,12 @@ def main(model_name, dataset_name):
     aucs, loss_means = \
         model.train_model(train_loader, test_loader, num_epochs, opt)
 
-    with open(ckpt_path + "aucs.pkl", "wb") as f:
+    with open(os.path.join(ckpt_path, "aucs_10.pkl"), "wb") as f:
         pickle.dump(aucs, f)
-    with open(ckpt_path + "loss_means.pkl", "wb") as f:
+    with open(os.path.join(ckpt_path, "loss_means_10.pkl"), "wb") as f:
         pickle.dump(loss_means, f)
 
-    torch.save(model.state_dict(), ckpt_path + "model.ckpt")
+    torch.save(model.state_dict(), os.path.join(ckpt_path, "model_10.ckpt"))
 
 
 if __name__ == "__main__":
@@ -141,7 +145,7 @@ if __name__ == "__main__":
         default="ASSIST2009",
         help="The name of the dataset to use in training. \
             The possible datasets are in \
-            [ASSIST2009, assistments2015, kddcup_20052006]. \
+            [ASSIST2009, ASSIST2015, kddcup_20052006]. \
             The default dataset is ASSIST2009."
     )
     args = parser.parse_args()

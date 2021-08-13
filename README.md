@@ -8,16 +8,26 @@ This repository is a collection of the following knowledge tracing algorithms:
 
 More algorithms will be added on this repository soon.
 
-In this repository, [ASSISTments2009](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data) "skill-builder" dataset are used. You need to download the dataset on the following path:
+In this repository, [ASSISTment2009](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data) "skill-builder" dataset are used. You need to download the dataset on the following path:
 
 ```
-.datasets/assistments2009/
+.datasets/ASSIST2009/
 ```
 
-Also, you can use the [ASSISTments2015](https://sites.google.com/site/assistmentsdata/home/2015-assistments-skill-builder-data) "skill-builder" dataset. Similarly you need to download them on the following path:
+Also, you can use the [ASSISTment2015](https://sites.google.com/site/assistmentsdata/home/2015-assistments-skill-builder-data) "skill-builder" dataset. Similarly you need to download them on the following path:
 
 ```
-.datasets/assistments2015/
+.datasets/ASSIST2015/
+```
+
+Other datasets, [Algebra 2005-2006](https://pslcdatashop.web.cmu.edu/KDDCup/downloads.jsp) and [Statics 2011](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=507) dataset can be used to train your knowledge tracing model. The pathes to download each dataset is:
+
+```
+.datasets/Algebra2005
+```
+
+```
+.datasets/Statics2011
 ```
 
 ## Install Dependencies
@@ -35,9 +45,9 @@ Also, you can use the [ASSISTments2015](https://sites.google.com/site/assistment
     - `batch_size`: The batch size of the training process. Default: 64
     - `num_epochs`: The number of epochs of the training process. Default: 100
     - `train_ratio`: The ratio of the training dataset to split the whole dataset. Default: 0.9
-    - `learning_rate`: The learning of the optimizer for the training process. Default: 1e-3
+    - `learning_rate`: The learning of the optimizer for the training process. Default: 0.001
     - `optimizer`: The optimizer to use in the training process. The possible optimizers are ["sgd", "adam"]. Default: "adam"
-    - `seq_len`: The sequence length for the dataset to use in the training process. Default: 200
+    - `seq_len`: The sequence length for the dataset to use in the training process. Default: 100
 2. Execute training process by `train.py`. An example of usage for `train.py` are following:
 
     ```bash
@@ -52,20 +62,25 @@ Also, you can use the [ASSISTments2015](https://sites.google.com/site/assistment
 
 ## Training Results
 
-### ASSISTments2009 Result
-![](/assets/img/README/README_2021-06-09-15-34-20.png)
+### ASSISTment2009 Result
+![](assets/img/2021-08-13-13-37-58.png)
 
-### ASSISTments2015 Result
-![](/assets/img/README/README_2021-06-09-15-34-40.png)
+### ASSISTment2015 Result
+![](assets/img/2021-08-13-13-39-02.png)
+
+### Algebra 2005-2006 Result
+![](assets/img/2021-08-13-13-42-17.png)
+
+### Statics 2011 Result
+![](assets/img/2021-08-13-13-42-43.png)
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
-- The result for ASSISTments2015 dataset was uploaded.
-- A new model(SSAKT) was added on this repository.
-- The new result for a new hyperparameter setting.
+- The preprocess module for the two datasets: Algebra 2005-2006, Statics 2011 was updated.
+- The results for Algebra 2005-2006 dataset and Statics 2011 dataset are updated.
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)

@@ -13,9 +13,9 @@ from models.utils import match_seq_len
 DATASET_DIR = ".datasets/algebra_2005_2006/"
 
 
-class KDDCUP20052006(Dataset):
+class Algebra2005(Dataset):
     def __init__(self, seq_len, datset_dir=DATASET_DIR) -> None:
-        super(Dataset, self).__init__()
+        super().__init__()
 
         self.seq_len = seq_len
 

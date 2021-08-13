@@ -10,7 +10,8 @@ from torch.optim import SGD, Adam
 
 from data_loaders.assist2009 import ASSIST2009
 from data_loaders.assist2015 import ASSIST2015
-from data_loaders.kddcup_20052006 import KDDCUP20052006
+from data_loaders.algebra2005 import Algebra2005
+from data_loaders.statics2011 import Statics2011
 from models.dkt import DKT
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
@@ -46,8 +47,10 @@ def main(model_name, dataset_name):
         dataset = ASSIST2009(seq_len)
     elif dataset_name == "ASSIST2015":
         dataset = ASSIST2015(seq_len)
-    elif dataset_name == "kddcup_20052006":
-        dataset = KDDCUP20052006(seq_len)
+    elif dataset_name == "Algebra2005":
+        dataset = Algebra2005(seq_len)
+    elif dataset_name == "Statics2011":
+        dataset = Statics2011(seq_len)
 
     with open(os.path.join(ckpt_path, "model_config.json"), "w") as f:
         json.dump(model_config, f, indent=4)
@@ -121,12 +124,12 @@ def main(model_name, dataset_name):
     aucs, loss_means = \
         model.train_model(train_loader, test_loader, num_epochs, opt)
 
-    with open(os.path.join(ckpt_path, "aucs_10.pkl"), "wb") as f:
+    with open(os.path.join(ckpt_path, "aucs.pkl"), "wb") as f:
         pickle.dump(aucs, f)
-    with open(os.path.join(ckpt_path, "loss_means_10.pkl"), "wb") as f:
+    with open(os.path.join(ckpt_path, "loss_means.pkl"), "wb") as f:
         pickle.dump(loss_means, f)
 
-    torch.save(model.state_dict(), os.path.join(ckpt_path, "model_10.ckpt"))
+    torch.save(model.state_dict(), os.path.join(ckpt_path, "model.ckpt"))
 
 
 if __name__ == "__main__":
@@ -145,7 +148,7 @@ if __name__ == "__main__":
         default="ASSIST2009",
         help="The name of the dataset to use in training. \
             The possible datasets are in \
-            [ASSIST2009, ASSIST2015, kddcup_20052006]. \
+            [ASSIST2009, ASSIST2015, Algebra2005, Statics2011]. \
             The default dataset is ASSIST2009."
     )
     args = parser.parse_args()

@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 
@@ -13,7 +15,7 @@ if torch.cuda.is_available():
 
 class DKVMN(Module):
     def __init__(self, num_q, dim_k, dim_v, N):
-        super(DKVMN, self).__init__()
+        super().__init__()
         self.num_q = num_q
         self.dim_k = dim_k
         self.dim_v = dim_v
@@ -35,15 +37,15 @@ class DKVMN(Module):
         self.a_layer = Linear(self.dim_v, self.dim_v)
 
     def forward(self, q, r):
-        qr = q + self.num_q * r
+        x = q + self.num_q * r
         Mvt = self.Mv.unsqueeze(0)
 
         p = []
         Mv = []
 
-        for qt, qrt in zip(q.permute(1, 0), qr.permute(1, 0)):
+        for qt, xt in zip(q.permute(1, 0), x.permute(1, 0)):
             kt = self.k_emb_layer(qt)
-            vt = self.v_emb_layer(qrt)
+            vt = self.v_emb_layer(xt)
 
             wt = torch.softmax(torch.matmul(kt, self.Mk), dim=-1)
 
@@ -66,7 +68,9 @@ class DKVMN(Module):
 
         return p, Mv
 
-    def train_model(self, train_loader, test_loader, num_epochs, opt):
+    def train_model(
+        self, train_loader, test_loader, num_epochs, opt, ckpt_path
+    ):
         aucs = []
         loss_means = []
 
@@ -78,7 +82,7 @@ class DKVMN(Module):
 
                 self.train()
 
-                p, _ = self(q, r)
+                p, _ = self(q.long(), r.long())
                 p = torch.masked_select(p, m)
                 t = torch.masked_select(r, m).float()
 
@@ -95,7 +99,7 @@ class DKVMN(Module):
 
                     self.eval()
 
-                    p, _ = self(q, r)
+                    p, _ = self(q.long(), r.long())
                     p = torch.masked_select(p, m).detach().cpu()
                     t = torch.masked_select(r, m).float().detach().cpu()
 
@@ -109,6 +113,14 @@ class DKVMN(Module):
                         "Epoch: {},   AUC: {},   Loss Mean: {}"
                         .format(i, auc, loss_mean)
                     )
+
+                    if i == 1 or auc > aucs[-1]:
+                        torch.save(
+                            self.state_dict(),
+                            os.path.join(
+                                ckpt_path, "model.ckpt"
+                            )
+                        )
 
                     aucs.append(auc)
                     loss_means.append(loss_mean)

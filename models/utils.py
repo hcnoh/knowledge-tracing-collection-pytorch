@@ -4,73 +4,73 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 
 if torch.cuda.is_available():
-    from torch.cuda import FloatTensor, LongTensor
+    from torch.cuda import FloatTensor
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
 else:
-    from torch import FloatTensor, LongTensor
+    from torch import FloatTensor
 
 
-def match_seq_len(questions, responses, seq_len, pad_val=-1):
-    preprocessed_questions = []
-    preprocessed_responses = []
+def match_seq_len(q_seqs, r_seqs, seq_len, pad_val=-1):
+    proc_q_seqs = []
+    proc_r_seqs = []
 
-    for q, r in zip(questions, responses):
+    for q_seq, r_seq in zip(q_seqs, r_seqs):
         i = 0
-        while i + seq_len + 1 < len(q):
-            preprocessed_questions.append(q[i:i + seq_len + 1])
-            preprocessed_responses.append(r[i:i + seq_len + 1])
+        while i + seq_len + 1 < len(q_seq):
+            proc_q_seqs.append(q_seq[i:i + seq_len + 1])
+            proc_r_seqs.append(r_seq[i:i + seq_len + 1])
 
             i += seq_len + 1
 
-        preprocessed_questions.append(
+        proc_q_seqs.append(
             np.concatenate(
                 [
-                    q[i:],
-                    np.array([pad_val] * (i + seq_len + 1 - len(q)))
+                    q_seq[i:],
+                    np.array([pad_val] * (i + seq_len + 1 - len(q_seq)))
                 ]
             )
         )
-        preprocessed_responses.append(
+        proc_r_seqs.append(
             np.concatenate(
                 [
-                    r[i:],
-                    np.array([pad_val] * (i + seq_len + 1 - len(q)))
+                    r_seq[i:],
+                    np.array([pad_val] * (i + seq_len + 1 - len(q_seq)))
                 ]
             )
         )
 
-    return preprocessed_questions, preprocessed_responses
+    return proc_q_seqs, proc_r_seqs
 
 
 def collate_fn(batch, pad_val=-1):
-    questions = []
-    responses = []
-    targets = []
-    deltas = []
+    q_seqs = []
+    r_seqs = []
+    qshft_seqs = []
+    rshft_seqs = []
 
-    for q, r in batch:
-        questions.append(LongTensor(q[:-1]))
-        responses.append(LongTensor(r[:-1]))
-        targets.append(FloatTensor(r[1:]))
-        deltas.append(LongTensor(q[1:]))
+    for q_seq, r_seq in batch:
+        q_seqs.append(FloatTensor(q_seq[:-1]))
+        r_seqs.append(FloatTensor(r_seq[:-1]))
+        qshft_seqs.append(FloatTensor(q_seq[1:]))
+        rshft_seqs.append(FloatTensor(r_seq[1:]))
 
-    questions = pad_sequence(
-        questions, batch_first=True, padding_value=pad_val
+    q_seqs = pad_sequence(
+        q_seqs, batch_first=True, padding_value=pad_val
     )
-    responses = pad_sequence(
-        responses, batch_first=True, padding_value=pad_val
+    r_seqs = pad_sequence(
+        r_seqs, batch_first=True, padding_value=pad_val
     )
-    targets = pad_sequence(
-        targets, batch_first=True, padding_value=pad_val
+    qshft_seqs = pad_sequence(
+        qshft_seqs, batch_first=True, padding_value=pad_val
     )
-    deltas = pad_sequence(
-        deltas, batch_first=True, padding_value=pad_val
+    rshft_seqs = pad_sequence(
+        rshft_seqs, batch_first=True, padding_value=pad_val
     )
 
-    masks = (questions != pad_val) * (deltas != pad_val)
+    mask_seqs = (q_seqs != pad_val) * (qshft_seqs != pad_val)
 
-    questions, responses, targets, deltas = \
-        questions * masks, responses * masks, targets * masks, \
-        deltas * masks
+    q_seqs, r_seqs, qshft_seqs, rshft_seqs = \
+        q_seqs * mask_seqs, r_seqs * mask_seqs, qshft_seqs * mask_seqs, \
+        rshft_seqs * mask_seqs
 
-    return questions, responses, targets, deltas, masks
+    return q_seqs, r_seqs, qshft_seqs, rshft_seqs, mask_seqs

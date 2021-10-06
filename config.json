@@ -1,6 +1,6 @@
 {
     "train_config": {
-        "batch_size": 64,
+        "batch_size": 256,
         "num_epochs": 100,
         "train_ratio": 0.9,
         "learning_rate": 0.001,
@@ -10,6 +10,13 @@
     "dkt": {
         "emb_size": 50,
         "hidden_size": 50
+    },
+    "dkt+": {
+        "emb_size": 50,
+        "hidden_size": 50,
+        "lambda_r": 0.1,
+        "lambda_w1": 0.003,
+        "lambda_w2": 3.0
     },
     "dkvmn": {
         "dim_k": 30,
@@ -28,5 +35,11 @@
         "num_attn_heads": 5,
         "num_attn_layers": 3,
         "dropout": 0.3
+    },
+    "saint": {
+        "n": 100,
+        "d": 30,
+        "num_attn_heads": 5,
+        "dropout": 0.6
     }
 }

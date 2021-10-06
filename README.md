@@ -2,32 +2,32 @@
 
 This repository is a collection of the following knowledge tracing algorithms:
 - **Deep Knowledge Tracing (DKT)**
+- **Deep Knowledge Tracing + (DKT+)**
 - **Dynamic Key-Value Memory Networks for Knowledge Tracing (DKVMN)**
 - **A Self-Attentive model for Knowledge Tracing (SAKT)**
-- **A Stacked variant of SAKT (SSAKT)**
 
 More algorithms will be added on this repository soon.
 
 In this repository, [ASSISTment2009](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data) "skill-builder" dataset are used. You need to download the dataset on the following path:
 
 ```
-.datasets/ASSIST2009/
+datasets/ASSIST2009/
 ```
 
 Also, you can use the [ASSISTment2015](https://sites.google.com/site/assistmentsdata/home/2015-assistments-skill-builder-data) "skill-builder" dataset. Similarly you need to download them on the following path:
 
 ```
-.datasets/ASSIST2015/
+datasets/ASSIST2015/
 ```
 
 Other datasets, [Algebra 2005-2006](https://pslcdatashop.web.cmu.edu/KDDCup/downloads.jsp) and [Statics 2011](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=507) dataset can be used to train your knowledge tracing model. The pathes to download each dataset are as follows:
 
 ```
-.datasets/Algebra2005
+datasets/Algebra2005
 ```
 
 ```
-.datasets/Statics2011
+datasets/Statics2011
 ```
 
 ## Install Dependencies
@@ -39,6 +39,10 @@ Other datasets, [Algebra 2005-2006](https://pslcdatashop.web.cmu.edu/KDDCup/down
     ```
 
 3. Install PyTorch. The version of PyTorch should be greater or equal than 1.7.0. This repository provides the CUDA usage.
+
+    *Note*: There are some bugs in the `pytorch.utils.data` module on the PyTorch version 1.9.0. If you want to run this repository safely, you need to install the PyTorch version 1.7.0 or 1.8.0. You can check the bugs closely in the following links:
+    - [https://github.com/pytorch/pytorch/issues/44714](https://github.com/pytorch/pytorch/issues/44714)
+    - [https://github.com/dunbar12138/DSNeRF/issues/3](https://github.com/dunbar12138/DSNeRF/issues/3)
 
 ## Training and Running
 1. Modify `config.json` as your machine setting. The following explanations are for understanding `train_config` of `config.json`:
@@ -65,27 +69,54 @@ Other datasets, [Algebra 2005-2006](https://pslcdatashop.web.cmu.edu/KDDCup/down
 ### ASSISTment2009 Result
 ![](assets/img/2021-08-13-13-37-58.png)
 
+|Model|Maximum Test AUC (%)|
+|---|---|
+|DKT|82.16 &pm; 0.07|
+|DKT+|82.23 &pm; 0.06|
+|SAKT|80.99 &pm; 0.20|
+
 ### ASSISTment2015 Result
 ![](assets/img/2021-08-13-13-39-02.png)
+
+|Model|Maximum Test AUC (%)|
+|---|---|
+|DKT|72.99 &pm; 0.04|
+|DKT+|72.47 &pm; 0.04|
 
 ### Algebra 2005-2006 Result
 ![](assets/img/2021-08-13-13-42-17.png)
 
+|Model|Maximum Test AUC (%)|
+|---|---|
+|DKT|82.32 &pm; 0.09|
+|DKT+|82.48 &pm; 0.06|
+
 ### Statics 2011 Result
 ![](assets/img/2021-08-13-13-42-43.png)
+
+|Model|Maximum Test AUC (%)|
+|---|---|
+|DKT|82.56 &pm; 0.10|
+|DKT+|83.28 &pm; 0.11|
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
-- The preprocess module for the two datasets: Algebra 2005-2006, Statics 2011 was updated.
-- The results for Algebra 2005-2006 dataset and Statics 2011 dataset are updated.
+- Modified some **critical** errors in DKT.
+- Modified the initialization of some parameters in DKVMN and SAKT.
+- Refactored `models.utils.py`.
+- Implemented DKT+.
+
+## Future Works
+- Implementation of SKVMN and AKT
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
+- DKT+: [Addressing Two Problems in Deep Knowledge Tracing via Prediction-Consistent Regularization](https://arxiv.org/pdf/1806.02180.pdf)
 - DKVMN: [Dynamic Key-Value Memory Networks for Knowledge Tracing](https://arxiv.org/pdf/1611.08108.pdf)
+- SKVMN: [Knowledge Tracing with Sequential Key-Value Memory Networks](https://arxiv.org/pdf/1910.13197.pdf)
 - SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
-- The first introduction of SSAKT: [Towards an Appropriate Query, Key, and Value
-Computation for Knowledge Tracing](https://arxiv.org/pdf/2002.07033.pdf)
+- AKT: [Context-Aware Attentive Knowledge Tracing](https://dl.acm.org/doi/pdf/10.1145/3394486.3403282)

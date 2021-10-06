@@ -1,63 +1,79 @@
-import os
-
 import numpy as np
 import torch
 
-from torch.nn import Module, Parameter, Embedding, Sequential, Linear, ReLU, \
-    MultiheadAttention, LayerNorm, Dropout
-from torch.nn.init import kaiming_normal_
+from torch.nn import Module, Parameter, Embedding, Linear, Transformer
+from torch.nn.init import normal_
 from torch.nn.functional import binary_cross_entropy
 from sklearn import metrics
 
 
-class SAKT(Module):
-    '''
-        I implemented this class with reference to: \
-        https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer
-    '''
-    def __init__(self, num_q, n, d, num_attn_heads, dropout):
+class SAINT(Module):
+    def __init__(
+        self, num_q, n, d, num_attn_heads, dropout, num_tr_layers=1
+    ):
         super().__init__()
         self.num_q = num_q
         self.n = n
         self.d = d
         self.num_attn_heads = num_attn_heads
         self.dropout = dropout
+        self.num_tr_layers = num_tr_layers
 
-        self.M = Embedding(self.num_q * 2, self.d)
-        self.E = Embedding(self.num_q, d)
+        self.E = Embedding(self.num_q, self.d)
+        self.R = Embedding(2, self.d)
         self.P = Parameter(torch.Tensor(self.n, self.d))
+        self.S = Parameter(torch.Tensor(1, self.d))
 
-        kaiming_normal_(self.P)
+        normal_(self.P)
+        normal_(self.S)
 
-        self.attn = MultiheadAttention(
-            self.d, self.num_attn_heads, dropout=self.dropout
+        self.transformer = Transformer(
+            self.d,
+            self.num_attn_heads,
+            num_encoder_layers=self.num_tr_layers,
+            num_decoder_layers=self.num_tr_layers,
+            dropout=self.dropout,
         )
-        self.attn_dropout = Dropout(self.dropout)
-        self.attn_layer_norm = LayerNorm(self.d)
-
-        self.FFN = Sequential(
-            Linear(self.d, self.d),
-            ReLU(),
-            Dropout(self.dropout),
-            Linear(self.d, self.d),
-            Dropout(self.dropout),
-        )
-        self.FFN_layer_norm = LayerNorm(self.d)
 
         self.pred = Linear(self.d, 1)
 
-    def forward(self, q, r, qry):
+    def forward(self, q, r):
+        batch_size = r.shape[0]
+
+        E = self.E(q).permute(1, 0, 2)
+
+        R = self.R(r[:, :-1]).permute(1, 0, 2)
+        S = self.S.repeat(batch_size, 1).unsqueeze(0)
+        R = torch.cat([S, R], dim=0)
+
+        P = self.P.unsqueeze(1)
+
+        mask = self.transformer.generate_square_subsequent_mask(self.n)
+        R = self.transformer(
+            E + P, R + P, mask, mask, mask
+        )
+        R = R.permute(1, 0, 2)
+
+        p = torch.sigmoid(self.pred(R)).squeeze()
+
+        return p
+
+    def discover_concepts(self, q, r):
+        queries = torch.LongTensor([list(range(self.num_q))] * self.n)\
+            .permute(1, 0)
+
         x = q + self.num_q * r
+        x = x.repeat(self.num_q, 1)
 
         M = self.M(x).permute(1, 0, 2)
-        E = self.E(qry).permute(1, 0, 2)
+        E = self.E(queries).permute(1, 0, 2)
         P = self.P.unsqueeze(1)
 
         causal_mask = torch.triu(
             torch.ones([E.shape[0], M.shape[0]]), diagonal=1
         ).bool()
 
-        M = M + P
+        M += P
 
         S, attn_weights = self.attn(E, M, M, attn_mask=causal_mask)
         S = self.attn_dropout(S)
@@ -74,9 +90,7 @@ class SAKT(Module):
 
         return p, attn_weights
 
-    def train_model(
-        self, train_loader, test_loader, num_epochs, opt, ckpt_path
-    ):
+    def train_model(self, train_loader, test_loader, num_epochs, opt):
         aucs = []
         loss_means = []
 
@@ -84,13 +98,13 @@ class SAKT(Module):
             loss_mean = []
 
             for data in train_loader:
-                q, r, qshft, rshft, m = data
+                q, r, _, _, m = data
 
                 self.train()
 
-                p, _ = self(q.long(), r.long(), qshft.long())
+                p = self(q, r)
                 p = torch.masked_select(p, m)
-                t = torch.masked_select(rshft, m)
+                t = torch.masked_select(r, m).float()
 
                 opt.zero_grad()
                 loss = binary_cross_entropy(p, t)
@@ -101,13 +115,13 @@ class SAKT(Module):
 
             with torch.no_grad():
                 for data in test_loader:
-                    q, r, qshft, rshft, m = data
+                    q, r, _, _, m = data
 
                     self.eval()
 
-                    p, _ = self(q.long(), r.long(), qshft.long())
+                    p = self(q, r)
                     p = torch.masked_select(p, m).detach().cpu()
-                    t = torch.masked_select(rshft, m).detach().cpu()
+                    t = torch.masked_select(r, m).float().detach().cpu()
 
                     auc = metrics.roc_auc_score(
                         y_true=t.numpy(), y_score=p.numpy()
@@ -119,14 +133,6 @@ class SAKT(Module):
                         "Epoch: {},   AUC: {},   Loss Mean: {}"
                         .format(i, auc, loss_mean)
                     )
-
-                    if i == 1 or auc > aucs[-1]:
-                        torch.save(
-                            self.state_dict(),
-                            os.path.join(
-                                ckpt_path, "model.ckpt"
-                            )
-                        )
 
                     aucs.append(auc)
                     loss_means.append(loss_mean)

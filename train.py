@@ -13,17 +13,17 @@ from data_loaders.assist2015 import ASSIST2015
 from data_loaders.algebra2005 import Algebra2005
 from data_loaders.statics2011 import Statics2011
 from models.dkt import DKT
+from models.dkt_plus import DKTPlus
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
-from models.ssakt import SSAKT
 from models.utils import collate_fn
 
 
 def main(model_name, dataset_name):
-    if not os.path.isdir(".ckpts"):
-        os.mkdir(".ckpts")
+    if not os.path.isdir("ckpts"):
+        os.mkdir("ckpts")
 
-    ckpt_path = os.path.join(".ckpts", model_name)
+    ckpt_path = os.path.join("ckpts", model_name)
     if not os.path.isdir(ckpt_path):
         os.mkdir(ckpt_path)
 
@@ -52,34 +52,25 @@ def main(model_name, dataset_name):
     elif dataset_name == "Statics2011":
         dataset = Statics2011(seq_len)
 
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+
     with open(os.path.join(ckpt_path, "model_config.json"), "w") as f:
         json.dump(model_config, f, indent=4)
     with open(os.path.join(ckpt_path, "train_config.json"), "w") as f:
         json.dump(train_config, f, indent=4)
 
     if model_name == "dkt":
-        if torch.cuda.is_available():
-            model = DKT(dataset.num_q, **model_config).cuda()
-        else:
-            model = DKT(dataset.num_q, **model_config)
+        model = DKT(dataset.num_q, **model_config).to(device)
+    if model_name == "dkt+":
+        model = DKTPlus(dataset.num_q, **model_config).to(device)
     elif model_name == "dkvmn":
-        if torch.cuda.is_available():
-            model = DKVMN(dataset.num_q, **model_config).cuda()
-        else:
-            model = DKVMN(dataset.num_q, **model_config)
+        model = DKVMN(dataset.num_q, **model_config).to(device)
     elif model_name == "sakt":
-        if torch.cuda.is_available():
-            model = SAKT(dataset.num_q, **model_config).cuda()
-        else:
-            model = SAKT(dataset.num_q, **model_config)
-    elif model_name == "ssakt":
-        if torch.cuda.is_available():
-            model = SSAKT(dataset.num_q, **model_config).cuda()
-        else:
-            model = SSAKT(dataset.num_q, **model_config)
-    else:
+        model = SAKT(dataset.num_q, **model_config).to(device)
         print("The wrong model name was used...")
-        return
 
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
@@ -122,7 +113,9 @@ def main(model_name, dataset_name):
         opt = Adam(model.parameters(), learning_rate)
 
     aucs, loss_means = \
-        model.train_model(train_loader, test_loader, num_epochs, opt)
+        model.train_model(
+            train_loader, test_loader, num_epochs, opt, ckpt_path
+        )
 
     with open(os.path.join(ckpt_path, "aucs.pkl"), "wb") as f:
         pickle.dump(aucs, f)
@@ -139,7 +132,7 @@ if __name__ == "__main__":
         type=str,
         default="dkt",
         help="The name of the model to train. \
-            The possible models are in [dkt, dkvmn, sakt, ssakt]. \
+            The possible models are in [dkt, dkt+, dkvmn, sakt]. \
             The default model is dkt."
     )
     parser.add_argument(

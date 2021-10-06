@@ -8,12 +8,17 @@ from torch.nn.functional import one_hot, binary_cross_entropy
 from sklearn import metrics
 
 
-class DKT(Module):
-    def __init__(self, num_q, emb_size, hidden_size):
+class DKTPlus(Module):
+    def __init__(
+        self, num_q, emb_size, hidden_size, lambda_r, lambda_w1, lambda_w2
+    ):
         super().__init__()
         self.num_q = num_q
         self.emb_size = emb_size
         self.hidden_size = hidden_size
+        self.lambda_r = lambda_r
+        self.lambda_w1 = lambda_w1
+        self.lambda_w2 = lambda_w2
 
         self.interaction_emb = Embedding(self.num_q * 2, self.emb_size)
         self.lstm_layer = LSTM(
@@ -47,13 +52,25 @@ class DKT(Module):
                 self.train()
 
                 y = self(q.long(), r.long())
-                y = (y * one_hot(qshft.long(), self.num_q)).sum(-1)
+                y_curr = (y * one_hot(q.long(), self.num_q)).sum(-1)
+                y_next = (y * one_hot(qshft.long(), self.num_q)).sum(-1)
 
-                y = torch.masked_select(y, m)
-                t = torch.masked_select(rshft, m)
+                y_curr = torch.masked_select(y_curr, m)
+                y_next = torch.masked_select(y_next, m)
+                r = torch.masked_select(r, m)
+                rshft = torch.masked_select(rshft, m)
 
                 opt.zero_grad()
-                loss = binary_cross_entropy(y, t)
+                loss = \
+                    binary_cross_entropy(y_next, rshft) + \
+                    self.lambda_r * binary_cross_entropy(y_curr, r) + \
+                    self.lambda_w1 * \
+                    torch.norm(y[:, 1:] - y[:, :-1], p=1, dim=-1).mean() / \
+                    self.num_q + \
+                    self.lambda_w2 * \
+                    (torch.norm(y[:, 1:] - y[:, :-1], p=2, dim=-1) ** 2)\
+                    .mean() / \
+                    self.num_q
                 loss.backward()
                 opt.step()
 
@@ -66,13 +83,13 @@ class DKT(Module):
                     self.eval()
 
                     y = self(q.long(), r.long())
-                    y = (y * one_hot(qshft.long(), self.num_q)).sum(-1)
+                    y_next = (y * one_hot(qshft.long(), self.num_q)).sum(-1)
 
-                    y = torch.masked_select(y, m).detach().cpu()
-                    t = torch.masked_select(rshft, m).detach().cpu()
+                    y_next = torch.masked_select(y_next, m).detach().cpu()
+                    rshft = torch.masked_select(rshft, m).detach().cpu()
 
                     auc = metrics.roc_auc_score(
-                        y_true=t.numpy(), y_score=y.numpy()
+                        y_true=rshft.numpy(), y_score=y_next.numpy()
                     )
 
                     loss_mean = np.mean(loss_mean)

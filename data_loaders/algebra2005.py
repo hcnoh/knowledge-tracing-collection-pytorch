@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from models.utils import match_seq_len
 
 
-DATASET_DIR = ".datasets/algebra_2005_2006/"
+DATASET_DIR = "datasets/algebra_2005_2006/"
 
 
 class Algebra2005(Dataset):

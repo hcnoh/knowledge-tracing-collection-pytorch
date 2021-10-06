@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from models.utils import match_seq_len
 
 
-DATASET_DIR = ".datasets/ASSIST2009/"
+DATASET_DIR = "datasets/ASSIST2009/"
 
 
 class ASSIST2009(Dataset):

@@ -68,6 +68,8 @@ class DKTPlus(Module):
         aucs = []
         loss_means = []
 
+        max_auc = 0
+
         for i in range(1, num_epochs + 1):
             loss_mean = []
 
@@ -124,13 +126,14 @@ class DKTPlus(Module):
                         .format(i, auc, loss_mean)
                     )
 
-                    if i == 1 or auc > aucs[-1]:
+                    if auc > max_auc:
                         torch.save(
                             self.state_dict(),
                             os.path.join(
                                 ckpt_path, "model.ckpt"
                             )
                         )
+                        max_auc = auc
 
                     aucs.append(auc)
                     loss_means.append(loss_mean)

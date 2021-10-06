@@ -19,9 +19,8 @@
         "lambda_w2": 3.0
     },
     "dkvmn": {
-        "dim_k": 30,
-        "dim_v": 30,
-        "N": 20
+        "dim_s": 50,
+        "size_m": 20
     },
     "sakt": {
         "n": 100,

@@ -4,73 +4,101 @@ import numpy as np
 import torch
 
 from torch.nn import Module, Parameter, Embedding, Linear
-from torch.nn.init import normal_
+from torch.nn.init import kaiming_normal_
 from torch.nn.functional import binary_cross_entropy
-# from torch.nn.utils import clip_grad_norm_
 from sklearn import metrics
-
-if torch.cuda.is_available():
-    torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
 class DKVMN(Module):
-    def __init__(self, num_q, dim_k, dim_v, N):
+    '''
+        Args:
+            num_q: the total number of the questions(KCs) in the given dataset
+            dim_s: the dimension of the state vectors in this model
+            size_m: the memory size of this model
+    '''
+    def __init__(self, num_q, dim_s, size_m):
         super().__init__()
         self.num_q = num_q
-        self.dim_k = dim_k
-        self.dim_v = dim_v
-        self.N = N
+        self.dim_s = dim_s
+        self.size_m = size_m
 
-        self.k_emb_layer = Embedding(self.num_q, self.dim_k)
-        self.Mk = Parameter(torch.Tensor(self.dim_k, self.N))
-        self.Mv = Parameter(torch.Tensor(self.N, self.dim_v))
+        self.k_emb_layer = Embedding(self.num_q, self.dim_s)
+        self.Mk = Parameter(torch.Tensor(self.size_m, self.dim_s))
+        self.Mv0 = Parameter(torch.Tensor(self.size_m, self.dim_s))
 
-        normal_(self.Mk)
-        normal_(self.Mv)
+        kaiming_normal_(self.Mk)
+        kaiming_normal_(self.Mv0)
 
-        self.v_emb_layer = Embedding(self.num_q * 2, self.dim_v)
+        self.v_emb_layer = Embedding(self.num_q * 2, self.dim_s)
 
-        self.f_layer = Linear(self.dim_k * 2, self.dim_k)
-        self.p_layer = Linear(self.dim_k, 1)
+        self.f_layer = Linear(self.dim_s * 2, self.dim_s)
+        self.p_layer = Linear(self.dim_s, 1)
 
-        self.e_layer = Linear(self.dim_v, self.dim_v)
-        self.a_layer = Linear(self.dim_v, self.dim_v)
+        self.e_layer = Linear(self.dim_s, self.dim_s)
+        self.a_layer = Linear(self.dim_s, self.dim_s)
 
     def forward(self, q, r):
+        '''
+            Args:
+                q: the question(KC) sequence with the size of [batch_size, n]
+                r: the response sequence with the size of [batch_size, n]
+
+            Returns:
+                p: the knowledge level about q
+                Mv: the value matrices from q, r
+        '''
         x = q + self.num_q * r
-        Mvt = self.Mv.unsqueeze(0)
 
-        p = []
-        Mv = []
+        batch_size = x.shape[0]
+        Mvt = self.Mv0.unsqueeze(0).repeat(batch_size, 1, 1)
 
-        for qt, xt in zip(q.permute(1, 0), x.permute(1, 0)):
-            kt = self.k_emb_layer(qt)
-            vt = self.v_emb_layer(xt)
+        Mv = [Mvt]
 
-            wt = torch.softmax(torch.matmul(kt, self.Mk), dim=-1)
+        k = self.k_emb_layer(q)
+        v = self.v_emb_layer(x)
 
-            # Read Process
-            rt = (wt.unsqueeze(-1) * Mvt).sum(1)
-            ft = torch.tanh(self.f_layer(torch.cat([rt, kt], dim=-1)))
-            pt = torch.sigmoid(self.p_layer(ft)).squeeze()
+        w = torch.softmax(torch.matmul(k, self.Mk.T), dim=-1)
 
-            # Write Process
-            et = torch.sigmoid(self.e_layer(vt))
-            Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1)))
-            at = torch.tanh(self.a_layer(vt))
-            Mvt = Mvt + (wt.unsqueeze(-1) * at.unsqueeze(1))
+        # Write Process
+        e = torch.sigmoid(self.e_layer(v))
+        a = torch.tanh(self.a_layer(v))
 
-            p.append(pt)
+        for et, at, wt in zip(
+            e.permute(1, 0, 2), a.permute(1, 0, 2), w.permute(1, 0, 2)
+        ):
+            Mvt = Mvt * (1 - (wt.unsqueeze(-1) * et.unsqueeze(1))) + \
+                (wt.unsqueeze(-1) * at.unsqueeze(1))
             Mv.append(Mvt)
 
-        p = torch.stack(p, dim=1)
         Mv = torch.stack(Mv, dim=1)
+
+        # Read Process
+        f = torch.tanh(
+            self.f_layer(
+                torch.cat(
+                    [
+                        (w.unsqueeze(-1) * Mv[:, :-1]).sum(-2),
+                        k
+                    ],
+                    dim=-1
+                )
+            )
+        )
+        p = torch.sigmoid(self.p_layer(f)).squeeze()
 
         return p, Mv
 
     def train_model(
         self, train_loader, test_loader, num_epochs, opt, ckpt_path
     ):
+        '''
+            Args:
+                train_loader: the PyTorch DataLoader instance for training
+                test_loader: the PyTorch DataLoader instance for test
+                num_epochs: the number of epochs
+                opt: the optimization to train this model
+                ckpt_path: the path to save this model's parameters
+        '''
         aucs = []
         loss_means = []
 

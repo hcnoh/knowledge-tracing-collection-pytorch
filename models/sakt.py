@@ -12,8 +12,16 @@ from sklearn import metrics
 
 class SAKT(Module):
     '''
-        I implemented this class with reference to: \
+        This implementation has a reference from: \
         https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer
+
+        Args:
+            num_q: the total number of the questions(KCs) in the given dataset
+            n: the length of the sequence of the questions or responses
+            d: the dimension of the hidden vectors in this model
+            num_attn_heads: the number of the attention heads in the \
+                multi-head attention module in this model
+            dropout: the dropout rate of this model
     '''
     def __init__(self, num_q, n, d, num_attn_heads, dropout):
         super().__init__()
@@ -47,6 +55,19 @@ class SAKT(Module):
         self.pred = Linear(self.d, 1)
 
     def forward(self, q, r, qry):
+        '''
+            Args:
+                q: the question(KC) sequence with the size of [batch_size, n]
+                r: the response sequence with the size of [batch_size, n]
+                qry: the query sequence with the size of [batch_size, m], \
+                    where the query is the question(KC) what the user wants \
+                    to check the knowledge level of
+
+            Returns:
+                p: the knowledge level about the query
+                attn_weights: the attention weights from the multi-head \
+                    attention module
+        '''
         x = q + self.num_q * r
 
         M = self.M(x).permute(1, 0, 2)
@@ -77,6 +98,14 @@ class SAKT(Module):
     def train_model(
         self, train_loader, test_loader, num_epochs, opt, ckpt_path
     ):
+        '''
+            Args:
+                train_loader: the PyTorch DataLoader instance for training
+                test_loader: the PyTorch DataLoader instance for test
+                num_epochs: the number of epochs
+                opt: the optimization to train this model
+                ckpt_path: the path to save this model's parameters
+        '''
         aucs = []
         loss_means = []
 

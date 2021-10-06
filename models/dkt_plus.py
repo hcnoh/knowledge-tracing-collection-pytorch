@@ -9,6 +9,15 @@ from sklearn import metrics
 
 
 class DKTPlus(Module):
+    '''
+        Args:
+            num_q: the total number of the questions(KCs) in the given dataset
+            emb_size: the dimension of the embedding vectors in this model
+            hidden_size: the dimension of the hidden vectors in this model
+            lambda_r: the hyperparameter of this model
+            lambda_w1: the hyperparameter of this model
+            lambda_w2: the hyperparameter of this model
+    '''
     def __init__(
         self, num_q, emb_size, hidden_size, lambda_r, lambda_w1, lambda_w2
     ):
@@ -28,6 +37,14 @@ class DKTPlus(Module):
         self.dropout_layer = Dropout()
 
     def forward(self, q, r):
+        '''
+            Args:
+                q: the question(KC) sequence with the size of [batch_size, n]
+                r: the response sequence with the size of [batch_size, n]
+
+            Returns:
+                y: the knowledge level about the all questions(KCs)
+        '''
         x = q + self.num_q * r
 
         h, _ = self.lstm_layer(self.interaction_emb(x))
@@ -40,6 +57,14 @@ class DKTPlus(Module):
     def train_model(
         self, train_loader, test_loader, num_epochs, opt, ckpt_path
     ):
+        '''
+            Args:
+                train_loader: the PyTorch DataLoader instance for training
+                test_loader: the PyTorch DataLoader instance for test
+                num_epochs: the number of epochs
+                opt: the optimization to train this model
+                ckpt_path: the path to save this model's parameters
+        '''
         aucs = []
         loss_means = []
 

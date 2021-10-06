@@ -73,7 +73,8 @@ datasets/Statics2011
 |---|---|
 |DKT|82.16 &pm; 0.07|
 |DKT+|82.23 &pm; 0.06|
-|SAKT|80.99 &pm; 0.20|
+|DKVMN|81.30 &pm; 0.13|
+|SAKT|81.08 &pm; 0.08|
 
 ### ASSISTment2015 Result
 ![](assets/img/2021-08-13-13-39-02.png)
@@ -90,6 +91,8 @@ datasets/Statics2011
 |---|---|
 |DKT|82.32 &pm; 0.09|
 |DKT+|82.48 &pm; 0.06|
+|DKVMN|81.22 &pm; 0.10|
+|SAKT|81.27 &pm; 0.07|
 
 ### Statics 2011 Result
 ![](assets/img/2021-08-13-13-42-43.png)
@@ -98,6 +101,8 @@ datasets/Statics2011
 |---|---|
 |DKT|82.56 &pm; 0.10|
 |DKT+|83.28 &pm; 0.11|
+|DKVMN|81.84 &pm; 0.09|
+|SAKT|80.85 &pm; 0.18|
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
@@ -119,4 +124,4 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - SKVMN: [Knowledge Tracing with Sequential Key-Value Memory Networks](https://arxiv.org/pdf/1910.13197.pdf)
 - SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
-- AKT: [Context-Aware Attentive Knowledge Tracing](https://dl.acm.org/doi/pdf/10.1145/3394486.3403282)
+- AKT: [Context-Aware Attentive Knowledge Tracing](https://arxiv.org/pdf/2007.12324.pdf)

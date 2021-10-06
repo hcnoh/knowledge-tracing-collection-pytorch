@@ -8,13 +8,13 @@
         "seq_len": 100
     },
     "dkt": {
-        "emb_size": 50,
-        "hidden_size": 50
+        "emb_size": 100,
+        "hidden_size": 100
     },
     "dkt+": {
-        "emb_size": 50,
-        "hidden_size": 50,
-        "lambda_r": 0.1,
+        "emb_size": 100,
+        "hidden_size": 100,
+        "lambda_r": 0.01,
         "lambda_w1": 0.003,
         "lambda_w2": 3.0
     },
@@ -24,16 +24,9 @@
     },
     "sakt": {
         "n": 100,
-        "d": 30,
+        "d": 100,
         "num_attn_heads": 5,
-        "dropout": 0.3
-    },
-    "ssakt": {
-        "n": 100,
-        "d": 30,
-        "num_attn_heads": 5,
-        "num_attn_layers": 3,
-        "dropout": 0.3
+        "dropout": 0.2
     },
     "saint": {
         "n": 100,

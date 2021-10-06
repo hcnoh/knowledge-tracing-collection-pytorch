@@ -66,9 +66,9 @@ datasets/Statics2011
 
 ## Training Results
 
-### ASSISTment2009 Result
-![](assets/img/2021-08-13-13-37-58.png)
+![](assets/img/2021-10-06-18-25-25.png)
 
+### ASSISTment2009 Result
 |Model|Maximum Test AUC (%)|
 |---|---|
 |DKT|82.16 &pm; 0.07|
@@ -77,16 +77,12 @@ datasets/Statics2011
 |SAKT|81.08 &pm; 0.08|
 
 ### ASSISTment2015 Result
-![](assets/img/2021-08-13-13-39-02.png)
-
 |Model|Maximum Test AUC (%)|
 |---|---|
 |DKT|72.99 &pm; 0.04|
 |DKT+|72.47 &pm; 0.04|
 
 ### Algebra 2005-2006 Result
-![](assets/img/2021-08-13-13-42-17.png)
-
 |Model|Maximum Test AUC (%)|
 |---|---|
 |DKT|82.32 &pm; 0.09|
@@ -95,8 +91,6 @@ datasets/Statics2011
 |SAKT|81.27 &pm; 0.07|
 
 ### Statics 2011 Result
-![](assets/img/2021-08-13-13-42-43.png)
-
 |Model|Maximum Test AUC (%)|
 |---|---|
 |DKT|82.56 &pm; 0.10|

@@ -66,7 +66,7 @@ datasets/Statics2011
 
 ## Training Results
 
-![](assets/img/2021-10-06-18-25-25.png)
+![](assets/img/2021-10-08-08-38-57.png)
 
 ### Training Configurations
 |Dataset|Configurations|
@@ -79,32 +79,34 @@ datasets/Statics2011
 ### ASSISTment2009 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
-|DKT|82.16 &pm; 0.07|`emb_size`: 100, `hidden_size`: 100|
-|DKT+|82.23 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
-|DKVMN|81.30 &pm; 0.13|`dim_s`: 50, `size_m`: 20|
-|SAKT|81.08 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
+|DKT|82.15 &pm; 0.05|`emb_size`: 100, `hidden_size`: 100|
+|DKT+|82.20 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.18 &pm; 0.16|`dim_s`: 50, `size_m`: 20|
+|SAKT|81.06 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
 ### ASSISTment2015 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
-|DKT|72.99 &pm; 0.04||
-|DKT+|72.47 &pm; 0.04||
+|DKT|72.99 &pm; 0.04|`emb_size`: 50, `hidden_size`: 50|
+|DKT+|72.43 &pm; 0.04|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|72.29 &pm; 0.05|`dim_s`: 50, `size_m`: 10|
+|SAKT|72.80 &pm; 0.05|`n`: 50, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
 ### Algebra 2005-2006 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
-|DKT|82.32 &pm; 0.09|`emb_size`: 100, `hidden_size`: 100|
-|DKT+|82.48 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
-|DKVMN|81.22 &pm; 0.10|`dim_s`: 50, `size_m`: 20|
-|SAKT|81.27 &pm; 0.07|`n`: 200, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
+|DKT|82.29 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100|
+|DKT+|82.50 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.20 &pm; 0.14|`dim_s`: 50, `size_m`: 20|
+|SAKT|81.28 &pm; 0.07|`n`: 200, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
 ### Statics 2011 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
-|DKT|82.56 &pm; 0.10|`emb_size`: 50, `hidden_size`: 50|
-|DKT+|83.28 &pm; 0.11|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
-|DKVMN|81.84 &pm; 0.09|`dim_s`: 50, `size_m`: 10|
-|SAKT|80.85 &pm; 0.18|`n`: 200, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
+|DKT|82.56 &pm; 0.09|`emb_size`: 50, `hidden_size`: 50|
+|DKT+|83.26 &pm; 0.12|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.80 &pm; 0.08|`dim_s`: 50, `size_m`: 10|
+|SAKT|80.90 &pm; 0.13|`n`: 200, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 

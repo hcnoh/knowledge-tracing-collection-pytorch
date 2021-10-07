@@ -46,7 +46,7 @@ datasets/Statics2011
 
 ## Training and Running
 1. Modify `config.json` as your machine setting. The following explanations are for understanding `train_config` of `config.json`:
-    - `batch_size`: The batch size of the training process. Default: 64
+    - `batch_size`: The batch size of the training process. Default: 256
     - `num_epochs`: The number of epochs of the training process. Default: 100
     - `train_ratio`: The ratio of the training dataset to split the whole dataset. Default: 0.9
     - `learning_rate`: The learning of the optimizer for the training process. Default: 0.001
@@ -68,35 +68,43 @@ datasets/Statics2011
 
 ![](assets/img/2021-10-06-18-25-25.png)
 
-### ASSISTment2009 Result
-|Model|Maximum Test AUC (%)|
+### Training Configurations
+|Dataset|Configurations|
 |---|---|
-|DKT|82.16 &pm; 0.07|
-|DKT+|82.23 &pm; 0.06|
-|DKVMN|81.30 &pm; 0.13|
-|SAKT|81.08 &pm; 0.08|
+|ASSISTment2009|`batch_size`: 256, `num_epochs`: 100, `train_ratio`: 0.9, `learning_rate`: 0.001, `optimizer`: "adam", `seq_len`: 100|
+|ASSISTment2015|`batch_size`: 256, `num_epochs`: 100, `train_ratio`: 0.9, `learning_rate`: 0.001, `optimizer`: "adam", `seq_len`: 50|
+|Algebra 2005-2006|`batch_size`: 256, `num_epochs`: 200, `train_ratio`: 0.9, `learning_rate`: 0.001, `optimizer`: "adam", `seq_len`: 200|
+|Statics 2011|`batch_size`: 256, `num_epochs`: 200, `train_ratio`: 0.9, `learning_rate`: 0.001, `optimizer`: "adam", `seq_len`: 200|
+
+### ASSISTment2009 Result
+|Model|Maximum Test AUC (%)|Hyperparameters|
+|---|---|---|
+|DKT|82.16 &pm; 0.07|`emb_size`: 100, `hidden_size`: 100|
+|DKT+|82.23 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.30 &pm; 0.13|`dim_s`: 50, `size_m`: 20|
+|SAKT|81.08 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
 ### ASSISTment2015 Result
-|Model|Maximum Test AUC (%)|
-|---|---|
-|DKT|72.99 &pm; 0.04|
-|DKT+|72.47 &pm; 0.04|
+|Model|Maximum Test AUC (%)|Hyperparameters|
+|---|---|---|
+|DKT|72.99 &pm; 0.04||
+|DKT+|72.47 &pm; 0.04||
 
 ### Algebra 2005-2006 Result
-|Model|Maximum Test AUC (%)|
-|---|---|
-|DKT|82.32 &pm; 0.09|
-|DKT+|82.48 &pm; 0.06|
-|DKVMN|81.22 &pm; 0.10|
-|SAKT|81.27 &pm; 0.07|
+|Model|Maximum Test AUC (%)|Hyperparameters|
+|---|---|---|
+|DKT|82.32 &pm; 0.09|`emb_size`: 100, `hidden_size`: 100|
+|DKT+|82.48 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.22 &pm; 0.10|`dim_s`: 50, `size_m`: 20|
+|SAKT|81.27 &pm; 0.07|`n`: 200, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
 ### Statics 2011 Result
-|Model|Maximum Test AUC (%)|
-|---|---|
-|DKT|82.56 &pm; 0.10|
-|DKT+|83.28 &pm; 0.11|
-|DKVMN|81.84 &pm; 0.09|
-|SAKT|80.85 &pm; 0.18|
+|Model|Maximum Test AUC (%)|Hyperparameters|
+|---|---|---|
+|DKT|82.56 &pm; 0.10|`emb_size`: 50, `hidden_size`: 50|
+|DKT+|83.28 &pm; 0.11|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKVMN|81.84 &pm; 0.09|`dim_s`: 50, `size_m`: 10|
+|SAKT|80.85 &pm; 0.18|`n`: 200, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
 
@@ -109,7 +117,7 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - Implemented DKT+.
 
 ## Future Works
-- Implementation of SKVMN and AKT
+- Implementation of SKVMN and KQN
 
 ## References
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
@@ -118,4 +126,5 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - SKVMN: [Knowledge Tracing with Sequential Key-Value Memory Networks](https://arxiv.org/pdf/1910.13197.pdf)
 - SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
+- KQN: [Knowledge Query Network for Knowledge Tracing](https://arxiv.org/pdf/1908.02146.pdf)
 - AKT: [Context-Aware Attentive Knowledge Tracing](https://arxiv.org/pdf/2007.12324.pdf)

@@ -11,6 +11,27 @@ else:
 
 
 def match_seq_len(q_seqs, r_seqs, seq_len, pad_val=-1):
+    '''
+        Args:
+            q_seqs: the question(KC) sequences with the size of \
+                [batch_size, some_sequence_length]
+            r_seqs: the response sequences with the size of \
+                [batch_size, some_sequence_length]
+
+            Note that the "some_sequence_length" is not uniform over \
+                the whole batch of q_seqs and r_seqs
+
+            seq_len: the sequence length to match the q_seqs, r_seqs \
+                to same length
+            pad_val: the padding value for the sequence with the length \
+                longer than seq_len
+
+        Returns:
+            proc_q_seqs: the processed q_seqs with the size of \
+                [batch_size, seq_len + 1]
+            proc_r_seqs: the processed r_seqs with the size of \
+                [batch_size, seq_len + 1]
+    '''
     proc_q_seqs = []
     proc_r_seqs = []
 
@@ -43,6 +64,24 @@ def match_seq_len(q_seqs, r_seqs, seq_len, pad_val=-1):
 
 
 def collate_fn(batch, pad_val=-1):
+    '''
+        The collate function for torch.utils.data.DataLoader
+
+        Returns:
+            q_seqs: the question(KC) sequences with the size of \
+                [batch_size, maximum_sequence_length_in_the_batch]
+            r_seqs: the response sequences with the size of \
+                [batch_size, maximum_sequence_length_in_the_batch]
+            qshft_seqs: the question(KC) sequences which were shifted \
+                one step to the right with ths size of \
+                [batch_size, maximum_sequence_length_in_the_batch]
+            rshft_seqs: the response sequences which were shifted \
+                one step to the right with ths size of \
+                [batch_size, maximum_sequence_length_in_the_batch]
+            mask_seqs: the mask sequences indicating where \
+                the padded entry is with the size of \
+                [batch_size, maximum_sequence_length_in_the_batch]
+    '''
     q_seqs = []
     r_seqs = []
     qshft_seqs = []

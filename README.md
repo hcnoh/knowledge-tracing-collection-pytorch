@@ -66,7 +66,7 @@ datasets/Statics2011
 
 ## Training Results
 
-![](assets/img/2021-10-08-08-38-57.png)
+![](assets/img/2021-10-08-16-35-07.png)
 
 ### Training Configurations
 |Dataset|Configurations|
@@ -80,7 +80,7 @@ datasets/Statics2011
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
 |DKT|82.15 &pm; 0.05|`emb_size`: 100, `hidden_size`: 100|
-|DKT+|82.20 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKT+|82.25 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 0.3|
 |DKVMN|81.18 &pm; 0.16|`dim_s`: 50, `size_m`: 20|
 |SAKT|81.06 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
@@ -88,7 +88,7 @@ datasets/Statics2011
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
 |DKT|72.99 &pm; 0.04|`emb_size`: 50, `hidden_size`: 50|
-|DKT+|72.43 &pm; 0.04|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKT+|72.78 &pm; 0.06|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 0.3|
 |DKVMN|72.29 &pm; 0.05|`dim_s`: 50, `size_m`: 10|
 |SAKT|72.80 &pm; 0.05|`n`: 50, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
@@ -96,7 +96,7 @@ datasets/Statics2011
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
 |DKT|82.29 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100|
-|DKT+|82.50 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKT+|82.53 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 1.0|
 |DKVMN|81.20 &pm; 0.14|`dim_s`: 50, `size_m`: 20|
 |SAKT|81.28 &pm; 0.07|`n`: 200, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
@@ -104,7 +104,7 @@ datasets/Statics2011
 |Model|Maximum Test AUC (%)|Hyperparameters|
 |---|---|---|
 |DKT|82.56 &pm; 0.09|`emb_size`: 50, `hidden_size`: 50|
-|DKT+|83.26 &pm; 0.12|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.003, `lambda_w2`: 3.0|
+|DKT+|83.36 &pm; 0.08|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 3.0|
 |DKVMN|81.80 &pm; 0.08|`dim_s`: 50, `size_m`: 10|
 |SAKT|80.90 &pm; 0.13|`n`: 200, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
@@ -130,3 +130,4 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
 - KQN: [Knowledge Query Network for Knowledge Tracing](https://arxiv.org/pdf/1908.02146.pdf)
 - AKT: [Context-Aware Attentive Knowledge Tracing](https://arxiv.org/pdf/2007.12324.pdf)
+- CKT: [Convolutional Knowledge Tracing: Modeling Individualization in Student Learning Process](https://www.researchgate.net/profile/Shen-Shuanghong/publication/343214175_Convolutional_Knowledge_Tracing_Modeling_Individualization_in_Student_Learning_Process/links/600fd43a45851553a06fe85d/Convolutional-Knowledge-Tracing-Modeling-Individualization-in-Student-Learning-Process.pdf)

@@ -87,17 +87,21 @@ class DKTPlus(Module):
                 r = torch.masked_select(r, m)
                 rshft = torch.masked_select(rshft, m)
 
+                loss_w1 = torch.masked_select(
+                    torch.norm(y[:, 1:] - y[:, :-1], p=1, dim=-1),
+                    m[:, 1:]
+                )
+                loss_w2 = torch.masked_select(
+                    (torch.norm(y[:, 1:] - y[:, :-1], p=2, dim=-1) ** 2),
+                    m[:, 1:]
+                )
+
                 opt.zero_grad()
                 loss = \
                     binary_cross_entropy(y_next, rshft) + \
                     self.lambda_r * binary_cross_entropy(y_curr, r) + \
-                    self.lambda_w1 * \
-                    torch.norm(y[:, 1:] - y[:, :-1], p=1, dim=-1).mean() / \
-                    self.num_q + \
-                    self.lambda_w2 * \
-                    (torch.norm(y[:, 1:] - y[:, :-1], p=2, dim=-1) ** 2)\
-                    .mean() / \
-                    self.num_q
+                    self.lambda_w1 * loss_w1.mean() / self.num_q + \
+                    self.lambda_w2 * loss_w2.mean() / self.num_q
                 loss.backward()
                 opt.step()
 

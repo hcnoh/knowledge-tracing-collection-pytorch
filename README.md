@@ -119,6 +119,7 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - Implemented DKT+.
 
 ## Future Works
+- Implementation of GKT
 - Implementation of SKVMN and KQN
 
 ## References
@@ -128,6 +129,7 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - SKVMN: [Knowledge Tracing with Sequential Key-Value Memory Networks](https://arxiv.org/pdf/1910.13197.pdf)
 - SAKT: [A Self-Attentive model for Knowledge Tracing](https://arxiv.org/pdf/1907.06837.pdf)
 - For the implementation of SAKT: [PyTorch Transforme Encoder Layer](https://pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html#TransformerEncoderLayer)
+- GKT: [Graph-based Knowledge Tracing: Modeling Student Proficiency Using Graph Neural Network](https://rlgm.github.io/papers/70.pdf)
 - KQN: [Knowledge Query Network for Knowledge Tracing](https://arxiv.org/pdf/1908.02146.pdf)
 - AKT: [Context-Aware Attentive Knowledge Tracing](https://arxiv.org/pdf/2007.12324.pdf)
 - CKT: [Convolutional Knowledge Tracing: Modeling Individualization in Student Learning Process](https://www.researchgate.net/profile/Shen-Shuanghong/publication/343214175_Convolutional_Knowledge_Tracing_Modeling_Individualization_in_Student_Learning_Process/links/600fd43a45851553a06fe85d/Convolutional-Knowledge-Tracing-Modeling-Individualization-in-Student-Learning-Process.pdf)

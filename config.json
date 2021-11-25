@@ -33,5 +33,10 @@
         "d": 30,
         "num_attn_heads": 5,
         "dropout": 0.6
+    },
+    "gkt": {
+        "hidden_size": 30,
+        "num_attn_heads": 2,
+        "method": "PAM"
     }
 }

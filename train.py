@@ -16,6 +16,7 @@ from models.dkt import DKT
 from models.dkt_plus import DKTPlus
 from models.dkvmn import DKVMN
 from models.sakt import SAKT
+from models.gkt import PAM, MHA
 from models.utils import collate_fn
 
 
@@ -64,13 +65,20 @@ def main(model_name, dataset_name):
 
     if model_name == "dkt":
         model = DKT(dataset.num_q, **model_config).to(device)
-    if model_name == "dkt+":
+    elif model_name == "dkt+":
         model = DKTPlus(dataset.num_q, **model_config).to(device)
     elif model_name == "dkvmn":
         model = DKVMN(dataset.num_q, **model_config).to(device)
     elif model_name == "sakt":
         model = SAKT(dataset.num_q, **model_config).to(device)
+    elif model_name == "gkt":
+        if model_config["method"] == "PAM":
+            model = PAM(dataset.num_q, **model_config).to(device)
+        elif model_config["method"] == "MHA":
+            model = MHA(dataset.num_q, **model_config).to(device)
+    else:
         print("The wrong model name was used...")
+        return
 
     train_size = int(len(dataset) * train_ratio)
     test_size = len(dataset) - train_size
@@ -132,7 +140,7 @@ if __name__ == "__main__":
         type=str,
         default="dkt",
         help="The name of the model to train. \
-            The possible models are in [dkt, dkt+, dkvmn, sakt]. \
+            The possible models are in [dkt, dkt+, dkvmn, sakt, gkt]. \
             The default model is dkt."
     )
     parser.add_argument(

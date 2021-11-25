@@ -5,6 +5,7 @@ This repository is a collection of the following knowledge tracing algorithms:
 - **Deep Knowledge Tracing + (DKT+)**
 - **Dynamic Key-Value Memory Networks for Knowledge Tracing (DKVMN)**
 - **A Self-Attentive model for Knowledge Tracing (SAKT)**
+- **Graph-based Knowledge Tracing (GKT)**
 
 More algorithms will be added on this repository soon.
 
@@ -117,12 +118,14 @@ SAKT looks like suffering an over-fitting. It seems that other tools to decrease
 - Modified the initialization of some parameters in DKVMN and SAKT.
 - Refactored `models.utils.py`.
 - Implemented DKT+.
+- Implemented PAM and MHA of GKT.
 
 ## Future Works
-- Implementation of GKT
-- Implementation of SKVMN and KQN
+- Complete the implementation of GKT.
+- Update the performance results of GKT.
 
 ## References
+- [Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf)
 - DKT: [Deep Knowledge Tracing](https://papers.nips.cc/paper/5654-deep-knowledge-tracing.pdf)
 - DKT+: [Addressing Two Problems in Deep Knowledge Tracing via Prediction-Consistent Regularization](https://arxiv.org/pdf/1806.02180.pdf)
 - DKVMN: [Dynamic Key-Value Memory Networks for Knowledge Tracing](https://arxiv.org/pdf/1611.08108.pdf)

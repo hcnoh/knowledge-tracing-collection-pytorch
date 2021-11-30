@@ -67,7 +67,7 @@ datasets/Statics2011
 
 ## Training Results
 
-![](assets/img/2021-11-29-12-56-13.png)
+![](assets/img/2021-11-30-14-47-47.png)
 
 ### Training Configurations
 |Dataset|Configurations|
@@ -85,6 +85,7 @@ datasets/Statics2011
 |DKVMN|81.18 &pm; 0.16|`dim_s`: 50, `size_m`: 20|
 |SAKT|81.06 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 |GKT (PAM)|82.12 &pm; 0.08|`hidden_size`: 30|
+|GKT (MHA)|81.88 &pm; 0.17|`hidden_size`: 30|
 
 ### ASSISTment2015 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|
@@ -94,6 +95,7 @@ datasets/Statics2011
 |DKVMN|72.29 &pm; 0.05|`dim_s`: 50, `size_m`: 10|
 |SAKT|72.80 &pm; 0.05|`n`: 50, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 |GKT (PAM)|73.02 &pm; 0.13|`hidden_size`: 30|
+|GKT (MHA)|73.14 &pm; 0.07|`hidden_size`: 30|
 
 ### Algebra 2005-2006 Result
 |Model|Maximum Test AUC (%)|Hyperparameters|

@@ -66,6 +66,7 @@ class GKT(Module):
 
             Returns:
                 y: the knowledge level about the all questions(KCs)
+                h: the hidden states of the all questions(KCs)
         '''
         batch_size = q.shape[0]
 

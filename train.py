@@ -130,8 +130,6 @@ def main(model_name, dataset_name):
     with open(os.path.join(ckpt_path, "loss_means.pkl"), "wb") as f:
         pickle.dump(loss_means, f)
 
-    torch.save(model.state_dict(), os.path.join(ckpt_path, "model.ckpt"))
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

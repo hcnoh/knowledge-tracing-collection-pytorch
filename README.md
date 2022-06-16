@@ -4,6 +4,7 @@ This repository is a collection of the following knowledge tracing algorithms:
 - **Deep Knowledge Tracing (DKT)**
 - **Deep Knowledge Tracing + (DKT+)**
 - **Dynamic Key-Value Memory Networks for Knowledge Tracing (DKVMN)**
+- **Knowledge Query Network for Knowledge Tracing (KQN)**
 - **A Self-Attentive model for Knowledge Tracing (SAKT)**
 - **Graph-based Knowledge Tracing (GKT)**
 
@@ -67,7 +68,7 @@ datasets/Statics2011
 
 ## Training Results
 
-![](assets/img/2021-11-30-14-47-47.png)
+![](assets/img/20220616140857.png)  
 
 ### Training Configurations
 |Dataset|Configurations|
@@ -83,6 +84,7 @@ datasets/Statics2011
 |DKT|82.15 &pm; 0.05|`emb_size`: 100, `hidden_size`: 100|
 |DKT+|82.25 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 0.3|
 |DKVMN|81.18 &pm; 0.16|`dim_s`: 50, `size_m`: 20|
+|KQN|79.82 &pm; 0.11|`dim_v`: 100, `dim_s`: 100, `hidden_size`: 100|
 |SAKT|81.06 &pm; 0.08|`n`: 100, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 |GKT (PAM)|82.12 &pm; 0.08|`hidden_size`: 30|
 |GKT (MHA)|81.88 &pm; 0.17|`hidden_size`: 30|
@@ -93,6 +95,7 @@ datasets/Statics2011
 |DKT|72.99 &pm; 0.04|`emb_size`: 50, `hidden_size`: 50|
 |DKT+|72.78 &pm; 0.06|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 0.3|
 |DKVMN|72.29 &pm; 0.05|`dim_s`: 50, `size_m`: 10|
+|KQN|71.97 &pm; 0.14|`dim_v`: 50, `dim_s`: 50, `hidden_size`: 50|
 |SAKT|72.80 &pm; 0.05|`n`: 50, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 |GKT (PAM)|73.02 &pm; 0.13|`hidden_size`: 30|
 |GKT (MHA)|73.14 &pm; 0.07|`hidden_size`: 30|
@@ -103,6 +106,7 @@ datasets/Statics2011
 |DKT|82.29 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100|
 |DKT+|82.53 &pm; 0.06|`emb_size`: 100, `hidden_size`: 100, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 1.0|
 |DKVMN|81.20 &pm; 0.14|`dim_s`: 50, `size_m`: 20|
+|KQN|77.08 &pm; 0.14|`dim_v`: 100, `dim_s`: 100, `hidden_size`: 100|
 |SAKT|81.28 &pm; 0.07|`n`: 200, `d`: 100, `num_attn_heads`: 5, `dropout` 0.2|
 
 ### Statics 2011 Result
@@ -111,6 +115,7 @@ datasets/Statics2011
 |DKT|82.56 &pm; 0.09|`emb_size`: 50, `hidden_size`: 50|
 |DKT+|83.36 &pm; 0.08|`emb_size`: 50, `hidden_size`: 50, `lambda_r`: 0.01, `lambda_w1`: 0.03, `lambda_w2`: 3.0|
 |DKVMN|81.80 &pm; 0.08|`dim_s`: 50, `size_m`: 10|
+|KQN|81.10 &pm; 0.13|`dim_v`: 50, `dim_s`: 50, `hidden_size`: 50|
 |SAKT|80.90 &pm; 0.13|`n`: 200, `d`: 50, `num_attn_heads`: 5, `dropout` 0.3|
 
 The fact that `Adam Optimizer` has better performance on the training of DKT and DKVMN can be checked easily by running this repository.
@@ -118,15 +123,16 @@ The fact that `Adam Optimizer` has better performance on the training of DKT and
 SAKT looks like suffering an over-fitting. It seems that other tools to decrease the over-fitting will help the performance of SAKT. In fact, the results show that the dropout methods can relieve the over-fitting of the performance of SAKT.
 
 ## Recent Works
-- Modified some **critical** errors in DKT.
+- Fixed some **critical** errors in DKT.
 - Modified the initialization of some parameters in DKVMN and SAKT.
 - Refactored `models.utils.py`.
 - Implemented DKT+.
 - Implemented PAM and MHA of GKT.
+- Implemented KQN.
+- Updated the performance results of KQN.
 
 ## Future Works
-- Complete the implementation of GKT.
-- Update the performance results of GKT.
+- Implement SKVMN.
 
 ## References
 - [Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf)

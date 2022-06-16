@@ -33,7 +33,7 @@ class KQN(Module):
         # Knowledge State Encoding
         x = q + self.num_q * r
         x = self.x_emb(x)
-        h = self.knowledge_encoder(x)
+        h, _ = self.knowledge_encoder(x)
         ks = self.out_layer(h)
         ks = self.dropout_layer(ks)
 
